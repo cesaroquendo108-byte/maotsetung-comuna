@@ -1,0 +1,66 @@
+name: Build and Update Android APK
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'capacitor.config.json'
+      - 'package.json'
+      - 'vite.config.js'
+      - 'index.html'
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # Needed to commit the APK back to the repo
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Web App
+        run: npm run build
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build Android APK (Debug)
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Copy APK to downloads folder
+        run: |
+          mkdir -p public/downloads
+          cp android/app/build/outputs/apk/debug/app-debug.apk public/downloads/uroprofin.apk
+
+      - name: Commit and Push APK
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add public/downloads/uroprofin.apk
+          # Only commit if there are changes
+          git diff --quiet && git diff --staged --quiet || (git commit -m "build: update Android APK" && git push)

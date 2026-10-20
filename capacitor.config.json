@@ -1,0 +1,10 @@
+{
+  "appId": "org.maotsetung.comuna",
+  "appName": "Mao Tse Tung Comuna",
+  "webDir": "dist",
+  "server": {
+    "url": "https://maotsetung-comuna.vercel.app",
+    "cleartext": false,
+    "androidScheme": "https"
+  }
+}

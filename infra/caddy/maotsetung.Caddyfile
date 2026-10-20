@@ -1,0 +1,7 @@
+pb-maotsetung.157.173.104.214.nip.io {
+    @pocketbase_dashboard path /_ /_/ /_/*
+    respond @pocketbase_dashboard 404
+
+    encode zstd gzip
+    reverse_proxy 172.17.0.1:8095
+}

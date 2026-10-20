@@ -1,0 +1,22 @@
+[Unit]
+Description=PocketBase exclusivo de Comuna Mao Tse Tung
+After=network-online.target docker.service
+Wants=network-online.target docker.service
+
+[Service]
+Type=simple
+User=maotsetung
+Group=maotsetung
+WorkingDirectory=/opt/maotsetung/pocketbase
+EnvironmentFile=/etc/maotsetung/pocketbase.env
+ExecStart=/opt/maotsetung/pocketbase/pocketbase serve --http=172.17.0.1:8095 --dir=/opt/maotsetung/pocketbase/pb_data --migrationsDir=/opt/maotsetung/pocketbase/pb_migrations --hooksDir=/opt/maotsetung/pocketbase/pb_hooks --encryptionEnv=PB_ENCRYPTION_KEY --dev=false --automigrate=false --hooksWatch=false --origins=https://maotsetung-comuna.vercel.app,capacitor://localhost,https://localhost,http://localhost:5173,http://127.0.0.1:5173
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/maotsetung/pocketbase/pb_data
+
+[Install]
+WantedBy=multi-user.target
