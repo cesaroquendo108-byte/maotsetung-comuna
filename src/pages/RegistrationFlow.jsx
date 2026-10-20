@@ -92,11 +92,11 @@ export default function RegistrationFlow({ onCompleted } = {}) {
       numero_rif: '',
       razon_social: '',
       domicilio_fiscal: '',
-      estado: 'Miranda',
-      municipio: 'Sucre',
-      parroquia: 'Petare',
+      estado: COMMUNITY_CONFIG.state || 'Distrito Capital',
+      municipio: COMMUNITY_CONFIG.municipality || 'Municipio Bolivariano Libertador',
+      parroquia: COMMUNITY_CONFIG.parish || 'San Agustín',
       ciudad: 'Caracas',
-      codigo_postal: '1073',
+      codigo_postal: COMMUNITY_CONFIG.postalCode || '1010',
       numero_casa: '',
       esta_vencido: false,
       mensaje_vigencia: '',
@@ -113,9 +113,9 @@ export default function RegistrationFlow({ onCompleted } = {}) {
           return {
             ...initial,
             ...d.rif,
-            estado: d.rif.estado || 'Miranda',
-            municipio: d.rif.municipio || 'Sucre',
-            parroquia: d.rif.parroquia || 'Petare',
+            estado: d.rif.estado || COMMUNITY_CONFIG.state || 'Distrito Capital',
+            municipio: d.rif.municipio || COMMUNITY_CONFIG.municipality || 'Municipio Bolivariano Libertador',
+            parroquia: d.rif.parroquia || COMMUNITY_CONFIG.parish || 'San Agustín',
             ciudad: d.rif.ciudad || 'Caracas',
             file: null,
             previewUrl: d.rif.imageBase64 || d.rif.previewUrl || '',
@@ -783,11 +783,11 @@ export default function RegistrationFlow({ onCompleted } = {}) {
         setRif((prev) => ({
           ...prev,
           ...data,
-          estado: data?.estado || prev.estado || 'Miranda',
-          municipio: data?.municipio || prev.municipio || 'Sucre',
-          parroquia: data?.parroquia || prev.parroquia || 'Petare',
+          estado: data?.estado || prev.estado || COMMUNITY_CONFIG.state || 'Distrito Capital',
+          municipio: data?.municipio || prev.municipio || COMMUNITY_CONFIG.municipality || 'Municipio Bolivariano Libertador',
+          parroquia: data?.parroquia || prev.parroquia || COMMUNITY_CONFIG.parish || 'San Agustín',
           ciudad: data?.ciudad || prev.ciudad || 'Caracas',
-          codigo_postal: data?.codigo_postal || prev.codigo_postal || '1073',
+          codigo_postal: data?.codigo_postal || prev.codigo_postal || COMMUNITY_CONFIG.postalCode || '1010',
           numero_casa: extractedHouse || prev.numero_casa || '',
           scanned: true,
           file: compressed,
@@ -823,11 +823,11 @@ export default function RegistrationFlow({ onCompleted } = {}) {
           setRif((prev) => ({
             ...prev,
             ...data,
-            estado: data?.estado || prev.estado || 'Miranda',
-            municipio: data?.municipio || prev.municipio || 'Sucre',
-            parroquia: data?.parroquia || prev.parroquia || 'Petare',
+            estado: data?.estado || prev.estado || COMMUNITY_CONFIG.state || 'Distrito Capital',
+            municipio: data?.municipio || prev.municipio || COMMUNITY_CONFIG.municipality || 'Municipio Bolivariano Libertador',
+            parroquia: data?.parroquia || prev.parroquia || COMMUNITY_CONFIG.parish || 'San Agustín',
             ciudad: data?.ciudad || prev.ciudad || 'Caracas',
-            codigo_postal: data?.codigo_postal || prev.codigo_postal || '1073',
+            codigo_postal: data?.codigo_postal || prev.codigo_postal || COMMUNITY_CONFIG.postalCode || '1010',
             numero_casa: extractedHouse || prev.numero_casa || '',
             scanned: true,
             file: compressed,
@@ -1701,21 +1701,21 @@ export default function RegistrationFlow({ onCompleted } = {}) {
                   <Field label="Estado">
                     <input
                       type="text"
-                      value={rif.estado || 'Miranda'}
+                      value={rif.estado || COMMUNITY_CONFIG.state || 'Distrito Capital'}
                       onChange={(e) => setRif({ ...rif, estado: e.target.value })}
                     />
                   </Field>
                   <Field label="Municipio">
                     <input
                       type="text"
-                      value={rif.municipio || 'Sucre'}
+                      value={rif.municipio || COMMUNITY_CONFIG.municipality || 'Municipio Bolivariano Libertador'}
                       onChange={(e) => setRif({ ...rif, municipio: e.target.value })}
                     />
                   </Field>
                   <Field label="Parroquia">
                     <input
                       type="text"
-                      value={rif.parroquia || 'Petare'}
+                      value={rif.parroquia || COMMUNITY_CONFIG.parish || 'San Agustín'}
                       onChange={(e) => setRif({ ...rif, parroquia: e.target.value })}
                     />
                   </Field>

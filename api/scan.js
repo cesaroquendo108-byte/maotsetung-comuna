@@ -37,9 +37,9 @@ function normalizeScanResult(parsed, scanType) {
   if (!parsed || parsed.es_documento_valido === false) return parsed;
   if (scanType === 'rif') {
     const addr = String(parsed.domicilio_fiscal || parsed.fiscalAddress || '').trim();
-    parsed.estado = parsed.estado || parsed.state || 'Miranda';
-    parsed.municipio = parsed.municipio || parsed.municipality || 'Sucre';
-    parsed.parroquia = parsed.parroquia || parsed.parish || 'Petare';
+    parsed.estado = parsed.estado || parsed.state || 'Distrito Capital';
+    parsed.municipio = parsed.municipio || parsed.municipality || 'Municipio Bolivariano Libertador';
+    parsed.parroquia = parsed.parroquia || parsed.parish || 'San Agustín';
     parsed.ciudad = parsed.ciudad || parsed.city || 'Caracas';
 
     if (!parsed.numero_casa && !parsed.houseNumber && addr) {

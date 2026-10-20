@@ -30,6 +30,7 @@ imports/
 *.keystore
 google-services.json
 *.apk
+!public/downloads/*.apk
 *.aab
 *.log
 Thumbs.db

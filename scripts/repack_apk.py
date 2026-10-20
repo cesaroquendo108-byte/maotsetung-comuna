@@ -399,10 +399,10 @@ def verify_apk(apk_bytes: bytes, pubkey: rsa.RSAPublicKey) -> None:
 
 
 if __name__ == "__main__":
-    src = "public/downloads/uroprofin.apk"
-    web = "android/app/src/main/assets/public"
+    src = "public/downloads/maotsetung.apk"
+    web = "dist"
     outputs = [
-        "public/downloads/uroprofin.apk",
-        "dist/downloads/uroprofin.apk",
+        "public/downloads/maotsetung.apk",
+        "dist/downloads/maotsetung.apk",
     ]
     build_and_sign_apk(src, web, outputs)
