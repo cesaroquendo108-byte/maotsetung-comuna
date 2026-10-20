@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Uroprofin</string>
-    <string name="title_activity_main">Uroprofin</string>
-    <string name="package_name">org.uroprofin.comunidad</string>
-    <string name="custom_url_scheme">org.uroprofin.comunidad</string>
+    <string name="app_name">Mao Tse Tung</string>
+    <string name="title_activity_main">Mao Tse Tung</string>
+    <string name="package_name">org.maotsetung.comuna</string>
+    <string name="custom_url_scheme">org.maotsetung.comuna</string>
 </resources>

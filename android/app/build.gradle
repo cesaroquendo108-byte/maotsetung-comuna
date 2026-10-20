@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "org.uroprofin.comunidad"
+    namespace = "org.maotsetung.comuna"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "org.uroprofin.comunidad"
+        applicationId "org.maotsetung.comuna"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

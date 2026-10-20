@@ -46,6 +46,8 @@ const AUTHORIZED_ADMIN_EMAILS = [
   'rosa.acosta05@gmail.com',
   'cesaroquendo10@gmail.com',
   'kilby12lite@gmail.com',
+  'david.enahp@gmail.com',
+  'comunamaotsetung.caracas@gmail.com',
 ];
 
 function isAuthorizedAdmin(email) {

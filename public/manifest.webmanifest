@@ -1,11 +1,11 @@
 {
-  "name": "Uroprofin · Gestión comunal",
-  "short_name": "Uroprofin",
-  "description": "Censo, jornadas CLAP y reportes para la comunidad Uroprofin.",
+  "name": "Comuna Mao Tse Tung · Gestión Comunal y Fiscal",
+  "short_name": "Mao Tse Tung",
+  "description": "Caracterización sociodemográfica, gestión comunal y fiscal para la Comuna Mao Tse Tung · Parroquia San Agustín.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F7F3F2",
-  "theme_color": "#C62A38",
+  "theme_color": "#0284C7",
   "lang": "es-VE",
   "categories": ["utilities", "social"],
   "icons": [

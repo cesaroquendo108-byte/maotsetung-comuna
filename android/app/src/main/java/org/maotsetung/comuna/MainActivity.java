@@ -1,4 +1,4 @@
-package org.uroprofin.comunidad;
+package org.maotsetung.comuna;
 
 import com.getcapacitor.BridgeActivity;
 

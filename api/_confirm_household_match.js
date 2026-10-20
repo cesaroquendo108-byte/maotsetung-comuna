@@ -65,7 +65,7 @@ export default async function handler(req, res) {
     );
 
     const userEmail = String(auth.user?.email || '').trim().toLowerCase();
-    const isAdminEmail = ['jesus.oquendo@gmail.com', 'rosa.acosta05@gmail.com', 'cesaroquendo10@gmail.com', 'kilby12lite@gmail.com'].includes(userEmail) || userEmail.endsWith('@uroprofin.invalid') || userEmail.endsWith('@maotsetung.invalid');
+    const isAdminEmail = ['jesus.oquendo@gmail.com', 'rosa.acosta05@gmail.com', 'cesaroquendo10@gmail.com', 'kilby12lite@gmail.com', 'david.enahp@gmail.com', 'comunamaotsetung.caracas@gmail.com'].includes(userEmail) || userEmail.endsWith('@uroprofin.invalid') || userEmail.endsWith('@maotsetung.invalid');
 
     const membershipData = {
       community: community.id,

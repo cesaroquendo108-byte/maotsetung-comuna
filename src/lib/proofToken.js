@@ -1,6 +1,6 @@
 // Proof Token HMAC signing & verification for Finve specification
 
-const PROOF_TOKEN_SECRET = 'uroprofin_finve_payment_proof_secret_v1_secure';
+const PROOF_TOKEN_SECRET = 'maotsetung_finve_payment_proof_secret_v1_secure';
 const DOMAIN_PREFIX = 'proof-v1:';
 const TTL_MS = 60 * 60 * 1000; // 1 hour TTL
 
