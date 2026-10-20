@@ -43,6 +43,12 @@ export default function Login() {
             <Field label="Contraseña" required>
               <input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="••••••••" />
             </Field>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '0.85rem', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.72rem', color: '#64748B', width: '100%' }}>Voceros autorizados (1 clic):</span>
+              <button type="button" className="link-button" style={{ fontSize: '0.72rem', padding: '3px 8px', background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: '4px', color: '#334155' }} onClick={() => { setEmail('cesaroquendo10@gmail.com'); setPassword('MaoTseTung2026!'); }}>César</button>
+              <button type="button" className="link-button" style={{ fontSize: '0.72rem', padding: '3px 8px', background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: '4px', color: '#334155' }} onClick={() => { setEmail('david.enahp@gmail.com'); setPassword('MaoTseTung2026!'); }}>David (ENAHP)</button>
+              <button type="button" className="link-button" style={{ fontSize: '0.72rem', padding: '3px 8px', background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: '4px', color: '#334155' }} onClick={() => { setEmail('kilby12lite@gmail.com'); setPassword('MaoTseTung2026!'); }}>Kilby</button>
+            </div>
             <button className="primary-button full" type="submit" disabled={loading || !email || !password}>{loading ? 'Entrando…' : 'Entrar'}</button>
           </form>
 
