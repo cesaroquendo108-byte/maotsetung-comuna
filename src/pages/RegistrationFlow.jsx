@@ -130,7 +130,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
   const [social, setSocial] = useState(() => {
     const initial = {
       zoneId: '',
-      zoneCode: 'MPB',
+      zoneCode: 'SAC',
       houseNumber: '',
       houseSuffix: '',
       dwellingAddress: '',
@@ -275,7 +275,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
       .then((items) => {
         if (!active || !items?.length) return;
         setZones(items);
-        setSocial((s) => ({ ...s, zoneId: s.zoneId || items[0]?.id || '', zoneCode: s.zoneCode || items[0]?.code || 'MPB' }));
+        setSocial((s) => ({ ...s, zoneId: s.zoneId || items[0]?.id || '', zoneCode: s.zoneCode || items[0]?.code || 'SAC' }));
       })
       .catch(() => {});
     return () => { active = false; };
@@ -3000,7 +3000,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
                 <div className="reg-grid-2" style={{ padding: '1rem 0', borderBottom: '1px solid #E2E8F0', fontSize: '0.85rem' }}>
                   <div>
                     <span style={{ color: '#64748B', display: 'block', fontSize: '0.75rem' }}>Ubicación y Rol en Hogar</span>
-                    <strong style={{ color: '#0F172A' }}>Zona {social.zoneCode} · Casa {social.houseNumber}{social.houseSuffix ? ` (${social.houseSuffix})` : ''}</strong>
+                    <strong style={{ color: '#0F172A' }}>CC {social.zoneCode} · Casa {social.houseNumber}{social.houseSuffix ? ` (${social.houseSuffix})` : ''}</strong>
                     <div style={{ color: '#334155' }}>Rol: <b>{social.isHouseholdHead ? 'Jefe(a) de Hogar' : `Integrante (${social.relationship || 'Familiar'})`}</b></div>
                     <div style={{ color: '#334155', marginTop: '2px' }}>
                       Vivienda: <b>{social.housingTenure === 'alquilada' ? 'Alquilada' : social.housingTenure === 'familiar' ? 'Familiar / Prestada' : social.housingTenure === 'otra' ? 'Otra condición' : 'Propia'}</b>
