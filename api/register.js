@@ -233,37 +233,61 @@ export default async function handler(req, res) {
       }
 
       if (cedulaBase64) {
-        const cleanB64 = String(cedulaBase64).replace(/^data:image\/\w+;base64,/, '');
+        const mimeMatch = String(cedulaBase64).match(/^data:([^;]+);base64,/);
+        const detectedMime = mimeMatch ? mimeMatch[1].toLowerCase() : 'image/jpeg';
+        const cleanB64 = String(cedulaBase64).replace(/^data:[^;]+;base64,/, '');
         const buf = Buffer.from(cleanB64, 'base64');
-        const blob = new Blob([buf], { type: 'image/jpeg' });
-        const fileName = `cedula_${rawId}_${Date.now()}.jpg`;
+        const ext = detectedMime.includes('png') ? 'png' : detectedMime.includes('webp') ? 'webp' : detectedMime.includes('pdf') ? 'pdf' : 'jpg';
+        const validMime = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(detectedMime) ? detectedMime : 'image/jpeg';
+        const blob = new Blob([buf], { type: validMime });
+        const fileName = `cedula_${rawId}_${Date.now()}.${ext}`;
         formData.append('cedulaFile', blob, fileName);
         formData.set('cedulaDoc', fileName);
       }
 
       if (rifBase64) {
-        const cleanB64 = String(rifBase64).replace(/^data:image\/\w+;base64,/, '').replace(/^data:application\/pdf;base64,/, '');
+        const mimeMatch = String(rifBase64).match(/^data:([^;]+);base64,/);
+        const detectedMime = mimeMatch ? mimeMatch[1].toLowerCase() : (String(rifBase64).includes('application/pdf') ? 'application/pdf' : 'image/jpeg');
+        const cleanB64 = String(rifBase64).replace(/^data:[^;]+;base64,/, '');
         const buf = Buffer.from(cleanB64, 'base64');
-        const mime = String(rifBase64).includes('application/pdf') ? 'application/pdf' : 'image/jpeg';
-        const ext = mime === 'application/pdf' ? 'pdf' : 'jpg';
-        const blob = new Blob([buf], { type: mime });
+        const ext = detectedMime.includes('pdf') ? 'pdf' : detectedMime.includes('png') ? 'png' : detectedMime.includes('webp') ? 'webp' : 'jpg';
+        const validMime = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(detectedMime) ? detectedMime : 'image/jpeg';
+        const blob = new Blob([buf], { type: validMime });
         const fileName = `rif_${rawId}_${Date.now()}.${ext}`;
         formData.append('rifFile', blob, fileName);
         formData.set('rifDoc', fileName);
       }
 
-      if (existingResident.items?.length) {
-        resident = await pbUpload(`/api/collections/residents/records/${existingResident.items[0].id}`, {
-          method: 'PATCH',
-          token,
-          formData,
-        });
-      } else {
-        resident = await pbUpload('/api/collections/residents/records', {
-          method: 'POST',
-          token,
-          formData,
-        });
+      try {
+        if (existingResident.items?.length) {
+          resident = await pbUpload(`/api/collections/residents/records/${existingResident.items[0].id}`, {
+            method: 'PATCH',
+            token,
+            formData,
+          });
+        } else {
+          resident = await pbUpload('/api/collections/residents/records', {
+            method: 'POST',
+            token,
+            formData,
+          });
+        }
+      } catch (uploadError) {
+        console.warn('Advertencia en carga de archivos de resident, aplicando fallback sin adjuntos:', uploadError);
+        const fallbackData = { ...residentData, cedulaFile: undefined, rifFile: undefined, cedulaDoc: '', rifDoc: '' };
+        if (existingResident.items?.length) {
+          resident = await pbRequest(`/api/collections/residents/records/${existingResident.items[0].id}`, {
+            method: 'PATCH',
+            token,
+            body: fallbackData,
+          });
+        } else {
+          resident = await pbRequest('/api/collections/residents/records', {
+            method: 'POST',
+            token,
+            body: fallbackData,
+          });
+        }
       }
     } else {
       if (existingResident.items?.length) {
