@@ -7,7 +7,12 @@ export const ROLES = {
 export const AUTHORIZED_ADMIN_EMAILS = [
   'jesus.oquendo@gmail.com',
   'rosa.acosta05@gmail.com',
+  'rosaacostave@gmail.com',
   'cesaroquendo10@gmail.com',
+  'cesarfinve@gmail.com',
+  'cesaroquendo64@gmail.com',
+  'cesaroquendo108@gmail.com',
+  'oquendocesar25@gmail.com',
   'kilby12lite@gmail.com',
   'david.enahp@gmail.com',
   'comunamaotsetung.caracas@gmail.com',

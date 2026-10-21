@@ -56,15 +56,15 @@ export default function CommunityAnalytics({ role, onAction, onNavigate }) {
     try {
       const data = await getCommunityAnalyticsData(membership);
       if (!data.residents || data.residents.length === 0) {
-        // Fallback to demo baseline if live community has not populated residents yet
-        setDataset(getDemoAnalyticsData());
+        setDataset(isDemo ? getDemoAnalyticsData() : { residents: [], households: [], dwellings: [], zones: [] });
       } else {
         setDataset(data);
       }
     } catch (err) {
-      setError(err.message || 'Error al cargar los datos de analitica comunitaria.');
-      // Keep demo fallback available so dashboard is never blank
-      setDataset(getDemoAnalyticsData());
+      setError(err.message || 'Error al cargar los datos de analítica comunitaria.');
+      if (isDemo) {
+        setDataset(getDemoAnalyticsData());
+      }
     } finally {
       setLoading(false);
     }
