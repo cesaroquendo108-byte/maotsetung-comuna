@@ -16,6 +16,8 @@
     { "source": "/api/admin/dwellings/:id/merge", "destination": "/api/admin?resource=dwellings-merge&id=:id" },
     { "source": "/api/admin/families/:id/split", "destination": "/api/admin?resource=families-split&id=:id" },
     { "source": "/api/admin/link-requests", "destination": "/api/admin?resource=link-requests" },
+    { "source": "/api/signup", "destination": "/api/auth?action=signup" },
+    { "source": "/api/delete-account", "destination": "/api/auth?action=delete-account" },
     { "source": "/api/check-cedula-match", "destination": "/api/register?action=check-match" },
     { "source": "/api/confirm-household-match", "destination": "/api/register?action=confirm-match" },
     { "source": "/api/census-lookup", "destination": "/api/register?action=census-lookup" },

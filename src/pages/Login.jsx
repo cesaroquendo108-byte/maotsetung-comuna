@@ -25,6 +25,13 @@ export default function Login() {
   const switchMode = (newMode) => {
     setMode(newMode);
     setLocalError('');
+    if (newMode === 'signup') {
+      if (password && !passwordConfirm) setPasswordConfirm(password);
+      if (email && !name) {
+        const guessedName = email.split('@')[0].replace(/[._-]/g, ' ');
+        setName(guessedName.charAt(0).toUpperCase() + guessedName.slice(1));
+      }
+    }
   };
 
   const submit = async (event) => {
@@ -208,6 +215,29 @@ export default function Login() {
             <div className="form-error" role="alert" style={{ marginTop: '0.85rem' }}>
               <strong>{mode === 'signup' ? 'No pudimos crear tu cuenta.' : 'No pudimos iniciar sesion.'}</strong>
               <span>{displayError}</span>
+              {mode === 'signin' && (
+                <div style={{ marginTop: '0.65rem', paddingTop: '0.65rem', borderTop: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                  <p style={{ margin: '0 0 0.45rem', fontSize: '0.8rem', color: '#991B1B', lineHeight: 1.4 }}>
+                    ¿Es la primera vez que entras o no tienes contrasena aun para <strong>{email || 'este correo'}</strong>?
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => switchMode('signup')}
+                    style={{
+                      background: '#DC2626',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '0.5rem',
+                      padding: '6px 12px',
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Crear cuenta con este correo →
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

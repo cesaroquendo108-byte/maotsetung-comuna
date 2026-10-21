@@ -366,13 +366,9 @@ export default function RegistrationFlow({ onCompleted } = {}) {
     setConfirmMatchError('');
 
     if (!user) {
-      try {
-        await signInGoogle();
-      } catch (_) {
-        setConfirmMatchError('Inicia sesión con Google para vincular tu cuenta.');
-        setIsConfirmingMatch(false);
-        return;
-      }
+      setConfirmMatchError('Debes iniciar sesión con tu correo (Gmail, Hotmail, etc.) o Google para vincular tu cuenta a esta vivienda.');
+      setIsConfirmingMatch(false);
+      return;
     }
 
     try {
@@ -400,21 +396,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
 
       if (isAuthErr) {
         signOut();
-        try {
-          await signInGoogle();
-          await confirmHouseholdMatch({
-            residentId: matchedHousehold.resident.id,
-            householdId: matchedHousehold.household.id,
-            communityCode: 'URP-001',
-            ...matchPersonalData,
-          });
-          setIsSuccess(true);
-          try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
-          try { await retryMemberships(); } catch (_) {}
-          return;
-        } catch (reAuthErr) {
-          setConfirmMatchError('La sesión anterior venció. Pulsa "Entrar de nuevo con Google" para activar.');
-        }
+        setConfirmMatchError('La sesión anterior venció. Inicia sesión con tu correo (Gmail, Hotmail, etc.) o Google para continuar.');
       } else {
         setConfirmMatchError(err.message || 'Error al vincular el hogar. Intenta nuevamente.');
       }
@@ -1068,13 +1050,12 @@ export default function RegistrationFlow({ onCompleted } = {}) {
                   {user.email}
                 </strong>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => signInGoogle().catch(() => {})}
-                  style={{ background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '0.5rem', padding: '0.25rem 0.65rem', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                <a
+                  href="/login"
+                  style={{ background: '#0F172A', color: '#FFFFFF', border: 'none', borderRadius: '0.5rem', padding: '0.25rem 0.65rem', fontSize: '0.75rem', fontWeight: 700, textDecoration: 'none', display: 'inline-block' }}
                 >
-                  Conectar con Google
-                </button>
+                  Conectar cuenta
+                </a>
               )}
             </div>
             <StatusBadge tone="success">Paso {step} de 4</StatusBadge>
@@ -1359,44 +1340,24 @@ export default function RegistrationFlow({ onCompleted } = {}) {
                       <div className="form-error" style={{ marginBottom: '0.5rem' }} role="alert">
                         <strong>Aviso:</strong> {confirmMatchError}
                       </div>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          setIsConfirmingMatch(true);
-                          setConfirmMatchError('');
-                          signOut();
-                          try {
-                            await signInGoogle();
-                            await confirmHouseholdMatch({
-                              residentId: matchedHousehold.resident.id,
-                              householdId: matchedHousehold.household.id,
-                              communityCode: 'URP-001',
-                              ...matchPersonalData,
-                            });
-                            setIsSuccess(true);
-                            try { localStorage.removeItem(DRAFT_KEY); } catch (_) {}
-                            try { await retryMemberships(); } catch (_) {}
-                          } catch (e) {
-                            setConfirmMatchError(e.message || 'Error al autenticar con Google.');
-                          } finally {
-                            setIsConfirmingMatch(false);
-                          }
-                        }}
-                        disabled={isConfirmingMatch}
+                      <a
+                        href="/login"
                         style={{
+                          display: 'block',
+                          textAlign: 'center',
                           width: '100%',
                           padding: '0.75rem',
                           borderRadius: '0.5rem',
-                          border: '1px solid #0284C7',
-                          background: '#0284C7',
+                          border: '1px solid #0F172A',
+                          background: '#0F172A',
                           color: '#FFFFFF',
                           fontWeight: 700,
                           fontSize: '0.85rem',
-                          cursor: 'pointer',
+                          textDecoration: 'none',
                         }}
                       >
-                        Entrar de nuevo con Google y Activar
-                      </button>
+                        Iniciar sesion o Crear cuenta comunal →
+                      </a>
                     </div>
                   )}
 
