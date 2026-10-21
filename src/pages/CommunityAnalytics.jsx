@@ -107,7 +107,7 @@ export default function CommunityAnalytics({ role, onAction, onNavigate }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `inteligencia_bi_comunidad_${community?.code || 'URP'}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `inteligencia_bi_comunidad_${community?.code || COMMUNITY_CONFIG.code || 'MST-001'}_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -121,7 +121,7 @@ export default function CommunityAnalytics({ role, onAction, onNavigate }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `prospectos_finve_${community?.code || 'URP'}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `prospectos_finve_${community?.code || COMMUNITY_CONFIG.code || 'MST-001'}_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();

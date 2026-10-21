@@ -262,7 +262,13 @@ export function buildCneStatusData(residents = []) {
 export function buildZoneDistributionData(residents = [], zones = []) {
   const counts = {};
   residents.forEach((r) => {
-    const zCode = String(r.zoneCode || r.expand?.household?.zoneCode || 'URP').toUpperCase();
+    let zCode = String(r.zoneCode || r.expand?.household?.zoneCode || '').toUpperCase().trim();
+    if (zCode === 'PG') zCode = 'MNG';
+    if (!zCode || zCode === 'URP') {
+      const hCode = String(r.expand?.household?.code || '').toUpperCase();
+      const match = hCode.match(/-(SAC|MNG|LCH|HDC|MRN)-/);
+      zCode = match ? match[1] : (zones[0]?.code || 'SAC');
+    }
     counts[zCode] = (counts[zCode] || 0) + 1;
   });
 

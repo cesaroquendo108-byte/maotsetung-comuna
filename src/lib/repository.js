@@ -203,7 +203,9 @@ export async function submitResidentRegistration(payload) {
     const rawId = String(payload.cedula?.numero_cedula || '').replace(/\D/g, '');
     const nationality = String(payload.cedula?.tipo_documento || 'V').toUpperCase().includes('E') ? 'E' : 'V';
     const idFormatted = `${nationality}-${rawId}`;
-    const zoneCode = String(payload.social?.zoneCode || 'CC-SAC').toUpperCase();
+    let zoneCode = String(payload.social?.zoneCode || '').toUpperCase().trim();
+    if (zoneCode === 'PG') zoneCode = 'MNG';
+    if (!zoneCode || zoneCode === 'URP') zoneCode = 'SAC';
     const houseNumber = String(payload.social?.houseNumber || '').trim().replace(/[^a-zA-Z0-9-]/g, '') || rawId.slice(-4);
     const houseSuffix = String(payload.social?.houseSuffix || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '');
     const suffixPart = houseSuffix ? `-${houseSuffix}` : '';

@@ -7,10 +7,11 @@ function parseAllocationMeta(allocation, importedRecord) {
   const code = String(importedRecord?.expand?.matchedHousehold?.code || allocation || '').trim();
   const legacySeq = importedRecord?.expand?.matchedHousehold?.legacySequence;
 
-  // Pattern: URP-[ZONE]-[HOUSE] (ej: URP-PG-1006 o URP-RF1-1007-PA)
-  const match = code.match(/URP-([A-Za-z0-9]+)-([A-Za-z0-9]+)/i);
+  // Pattern: (MTT|MST|URP)-[ZONE]-[HOUSE]
+  const match = code.match(/(?:MTT|MST|URP)-([A-Za-z0-9]+)-([A-Za-z0-9]+)/i);
   if (match) {
-    const zone = match[1].toUpperCase();
+    let zone = match[1].toUpperCase();
+    if (zone === 'PG') zone = 'MNG';
     const houseStr = match[2];
     const num = Number(legacySeq) || parseInt(houseStr.replace(/\D/g, ''), 10) || 0;
     return { zone, houseNumber: houseStr, sequence: num, isMatched: true };
@@ -19,7 +20,7 @@ function parseAllocationMeta(allocation, importedRecord) {
   // Fallback para Casa 1006 o números aislados
   const numMatch = code.match(/\b(\d{2,6})\b/);
   if (numMatch) {
-    return { zone: 'URP', houseNumber: numMatch[1], sequence: parseInt(numMatch[1], 10), isMatched: true };
+    return { zone: 'SAC', houseNumber: numMatch[1], sequence: parseInt(numMatch[1], 10), isMatched: true };
   }
 
   return { zone: 'SIN_ASIGNAR', houseNumber: '', sequence: 999999, isMatched: false };
