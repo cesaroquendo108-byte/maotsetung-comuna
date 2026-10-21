@@ -25,10 +25,17 @@ async function apiRequest(path, options = {}) {
   return data;
 }
 
+const zonesCache = new Map();
 export async function getConsolidatedZones(communityCode = COMMUNITY_CONFIG.code) {
-  const params = new URLSearchParams({ communityCode: cleanText(communityCode, 40).toUpperCase() });
+  const code = cleanText(communityCode, 40).toUpperCase();
+  if (zonesCache.has(code)) {
+    return zonesCache.get(code);
+  }
+  const params = new URLSearchParams({ communityCode: code });
   const data = await apiRequest(`/api/zones?${params.toString()}`);
-  return data.items || [];
+  const items = data.items || [];
+  if (items.length > 0) zonesCache.set(code, items);
+  return items;
 }
 
 export async function getMyConsolidatedLinkRequests() {
@@ -40,9 +47,14 @@ export async function createConsolidatedLinkRequest(payload) {
   return apiRequest('/api/link-requests', { method: 'POST', body: JSON.stringify(payload) });
 }
 
+const matchCache = new Map();
 export async function checkCedulaMatch({ idNumber, nationality = 'V', communityCode = COMMUNITY_CONFIG.code }) {
   const rawId = String(idNumber || '').replace(/\D/g, '');
   if (!rawId) return { matched: false };
+  const cacheKey = `${communityCode}:${nationality}:${rawId}`;
+  if (matchCache.has(cacheKey)) {
+    return matchCache.get(cacheKey);
+  }
   try {
     const headers = {
       'Content-Type': 'application/json',
@@ -57,6 +69,7 @@ export async function checkCedulaMatch({ idNumber, nationality = 'V', communityC
     if (!response.ok) {
       throw new Error(data?.error || 'Error consultando coincidencia de cédula.');
     }
+    matchCache.set(cacheKey, data);
     return data;
   } catch (err) {
     console.warn('Advertencia en checkCedulaMatch:', err.message);
@@ -127,9 +140,14 @@ export async function confirmHouseholdMatch({ residentId, householdId, community
   }
 }
 
+const historicalCensusCache = new Map();
 export async function lookupHistoricalCensus({ idNumber, nationality = 'V', communityCode = COMMUNITY_CONFIG.code }) {
   const rawId = String(idNumber || '').replace(/\D/g, '');
   if (!rawId || rawId.length < 4) return { found: false };
+  const cacheKey = `${communityCode}:${nationality}:${rawId}`;
+  if (historicalCensusCache.has(cacheKey)) {
+    return historicalCensusCache.get(cacheKey);
+  }
   try {
     const params = new URLSearchParams({
       action: 'census-lookup',
@@ -142,6 +160,7 @@ export async function lookupHistoricalCensus({ idNumber, nationality = 'V', comm
     if (!response.ok) {
       throw new Error(data?.error || 'Error consultando censo histórico.');
     }
+    historicalCensusCache.set(cacheKey, data);
     return data;
   } catch (err) {
     console.warn('Advertencia en lookupHistoricalCensus:', err.message);
@@ -759,13 +778,14 @@ export async function getDashboardData(membership) {
   const seniorCutoff = `${now.getFullYear() - 60}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const childCutoff = `${now.getFullYear() - 18}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
+  const isRegular = membership.role === 'regular';
   const [residents, households, seniors, children, paymentRecords, importedPayments, incidentResult, allocationResult] = await Promise.all([
-    count('residents', `${scope} && status = "active"`),
-    membership.role === 'regular' ? Promise.resolve(membership.household ? 1 : 0) : count('households', `${community} && status = "active"`),
-    count('residents', `${scope} && status = "active" && birthDate != "" && birthDate <= "${seniorCutoff}"`),
-    count('residents', `${scope} && status = "active" && birthDate != "" && birthDate > "${childCutoff}"`),
+    isRegular ? Promise.resolve(0) : count('residents', `${scope} && status = "active"`),
+    isRegular ? Promise.resolve(membership.household ? 1 : 0) : count('households', `${community} && status = "active"`),
+    isRegular ? Promise.resolve(0) : count('residents', `${scope} && status = "active" && birthDate != "" && birthDate <= "${seniorCutoff}"`),
+    isRegular ? Promise.resolve(0) : count('residents', `${scope} && status = "active" && birthDate != "" && birthDate > "${childCutoff}"`),
     cycle ? pb.collection('payment_reports').getFullList({ filter: `${scope}${cycleScope}`, fields: 'amount,currency,status' }) : Promise.resolve([]),
-    membership.role === 'regular' ? Promise.resolve([]) : pb.collection('payment_import_staging').getFullList({ filter: `${community} && status != "ignored"`, fields: 'amount,currency,status' }),
+    isRegular ? Promise.resolve([]) : pb.collection('payment_import_staging').getFullList({ filter: `${community} && status != "ignored"`, fields: 'amount,currency,status' }),
     pb.collection('community_reports').getList(1, 3, { filter: `${community} && privacy = "community" && status != "closed"`, sort: '-updated', fields: 'id,category,title,zone,status,updated' }),
     cycle ? pb.collection('bag_allocations').getFullList({ filter: `${scope}${cycleScope} && status != "cancelled"`, fields: 'quantity' }) : Promise.resolve([]),
   ]);
@@ -1024,10 +1044,22 @@ export async function getMembership(userId) {
   return result.items[0] || null;
 }
 
+const membershipCache = new Map();
+
+export function clearMembershipCache() {
+  membershipCache.clear();
+}
+
 export async function getMemberships(user) {
   const userId = typeof user === 'object' ? user?.id : user;
   const userEmail = (typeof user === 'object' ? user?.email : pb.authStore.model?.email || '').toLowerCase().trim();
   if (!userId) return [];
+
+  const cacheKey = `${userId}:${userEmail}`;
+  const cached = membershipCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < 30000)) {
+    return cached.records;
+  }
 
   let records = await pb.collection('community_memberships').getFullList({
     filter: `user = "${userId}" && status = "active"`,
@@ -1085,10 +1117,12 @@ export async function getMemberships(user) {
     }
   }
 
-  return records.map((record) => ({
+  const mapped = records.map((record) => ({
     ...record,
     userEmail: userEmail || pb.authStore.model?.email || '',
   }));
+  membershipCache.set(cacheKey, { records: mapped, timestamp: Date.now() });
+  return mapped;
 }
 
 export async function getPendingMembershipRequest(userId) {

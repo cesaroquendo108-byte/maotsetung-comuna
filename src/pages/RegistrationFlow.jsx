@@ -281,7 +281,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
     return () => { active = false; };
   }, []);
 
-  // Persist form draft in localStorage
+  // Persist form draft in localStorage (debounced, excluding heavy image Base64 to prevent thread blocking)
   useEffect(() => {
     if (isSuccess) {
       try {
@@ -289,18 +289,22 @@ export default function RegistrationFlow({ onCompleted } = {}) {
       } catch (_) {}
       return;
     }
-    try {
-      const { file: _cf, ...cedulaClean } = cedula;
-      const { file: _rf, ...rifClean } = rif;
-      const draft = {
-        step,
-        cedula: cedulaClean,
-        rif: rifClean,
-        social,
-        updatedAt: new Date().toISOString(),
-      };
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    } catch (_) {}
+    const timer = setTimeout(() => {
+      try {
+        const { file: _cf, imageBase64: _cib, previewUrl: _cpu, ...cedulaClean } = cedula;
+        const { file: _rf, imageBase64: _rib, previewUrl: _rpu, ...rifClean } = rif;
+        const draft = {
+          step,
+          cedula: cedulaClean,
+          rif: rifClean,
+          social,
+          updatedAt: new Date().toISOString(),
+        };
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      } catch (_) {}
+    }, 400);
+
+    return () => clearTimeout(timer);
   }, [step, cedula, rif, social, isSuccess]);
 
   const handleResetForm = () => {

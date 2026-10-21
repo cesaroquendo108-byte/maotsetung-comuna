@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import pb, { currentUser, DEMO_ENABLED, login as passwordLogin, loginGoogle, logout as pbLogout, registerWithPassword } from '../lib/pocketbase.js';
 import { demoCommunity, demoHousehold } from '../lib/demoData.js';
-import { getMemberships } from '../lib/repository.js';
+import { clearMembershipCache, getMemberships } from '../lib/repository.js';
 import { isAuthorizedAdmin } from '../lib/permissions.js';
 
 const AuthContext = createContext(null);
@@ -132,6 +132,7 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = () => {
+    clearMembershipCache();
     if (!isDemo) pbLogout();
     setUser(null);
     setMembership(null);
@@ -142,6 +143,7 @@ export function AuthProvider({ children }) {
   };
 
   const retryMemberships = async () => {
+    clearMembershipCache();
     setMembershipReloadKey((value) => value + 1);
     if (!user || isDemo) return [];
     try {

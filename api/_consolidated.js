@@ -59,13 +59,20 @@ export async function serviceToken() {
   return serviceTokenPromise;
 }
 
+const communityCache = new Map();
+
 export async function findCommunity({ communityId, communityCode, token }) {
+  const cacheKey = `${communityId || ''}:${communityCode || ''}`;
+  if (communityCache.has(cacheKey)) {
+    return communityCache.get(cacheKey);
+  }
   if (communityId && !/^[a-z0-9]{15}$/i.test(communityId)) throw Object.assign(new Error('La comunidad seleccionada no es válida.'), { status: 400 });
   const filter = communityId ? `id = "${communityId}"` : `code = "${String(communityCode || '').trim().toUpperCase().replace(/"/g, '')}"`;
   if (!communityId && !communityCode) throw Object.assign(new Error('Indica la comunidad.'), { status: 400 });
   const data = await pbRequest(`/api/collections/communes/records?perPage=1&filter=${encodedFilter(filter)}`, { token });
   const community = data.items?.[0];
   if (!community) throw Object.assign(new Error('La comunidad no existe.'), { status: 404 });
+  communityCache.set(cacheKey, community);
   return community;
 }
 

@@ -28,12 +28,12 @@ export default async function handler(req, res) {
     const token = await serviceToken();
     const community = await findCommunity({ communityCode, token });
 
-    // Look for active resident matching the cédula
+    // Look for active resident matching the cedula (with expanded household for 1-roundtrip performance)
     const resFilter = encode(
       `community = "${community.id}" && (idNumberNormalized = "${rawId}" || idNumber = "${idFormatted}") && status != "inactive"`
     );
     const residentSearch = await pbRequest(
-      `/api/collections/residents/records?perPage=1&sort=-created&filter=${resFilter}`,
+      `/api/collections/residents/records?perPage=1&sort=-created&filter=${resFilter}&expand=household`,
       { token }
     );
 
@@ -42,14 +42,16 @@ export default async function handler(req, res) {
       return json(res, 200, { matched: false });
     }
 
-    // Fetch household details
-    let household = null;
-    try {
-      household = await pbRequest(
-        `/api/collections/households/records/${encode(resident.household)}`,
-        { token }
-      );
-    } catch (_) {}
+    // Use expanded household or fallback
+    let household = resident.expand?.household || null;
+    if (!household) {
+      try {
+        household = await pbRequest(
+          `/api/collections/households/records/${encode(resident.household)}`,
+          { token }
+        );
+      } catch (_) {}
+    }
 
     if (!household || household.status === 'inactive') {
       return json(res, 200, { matched: false });

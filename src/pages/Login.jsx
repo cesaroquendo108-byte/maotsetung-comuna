@@ -12,7 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [localError, setLocalError] = useState('');
-  const [googleAvailability, setGoogleAvailability] = useState('checking');
+  const [googleAvailability, setGoogleAvailability] = useState('available');
 
   useEffect(() => {
     let active = true;
