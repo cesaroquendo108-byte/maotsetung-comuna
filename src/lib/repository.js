@@ -852,7 +852,7 @@ export async function getResidentsPage(membership, { page = 1, perPage = 50, que
     ? await pb.collection('electoral_profiles').getFullList({
       filter: residentIds.map((id) => `resident = "${id}"`).join(' || '),
       fields: 'resident,status,votingCenterName,votingCenterAddress,source,checkedAt',
-    })
+    }).catch(() => [])
     : [];
   const profileByResident = new Map(profiles.map((profile) => [profile.resident, profile]));
   return {
