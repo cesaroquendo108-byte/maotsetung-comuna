@@ -1661,18 +1661,54 @@ export async function deactivateResident({ id, updatedBy, reason }) {
   });
 }
 
-export async function deleteMemberAccount({ membershipId, residentId }) {
-  if (!membershipId) throw new Error('No se encontró la membresía activa para eliminar.');
-  try {
-    await pb.collection('community_memberships').delete(membershipId);
-  } catch (err) {
-    console.warn('Error al eliminar membresía:', err);
+export async function deleteMemberAccount({ membershipId, residentId } = {}) {
+  const token = pb.authStore.token;
+  const currentUserId = pb.authStore.model?.id;
+
+  if (token) {
+    try {
+      const response = await fetch(`${API_BASE}/api/delete-account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        return data;
+      }
+      if (response.status === 403) {
+        throw new Error(data?.error || 'No tienes permisos para eliminar esta cuenta.');
+      }
+    } catch (apiErr) {
+      if (apiErr?.message && !apiErr.message.includes('fetch')) {
+        throw apiErr;
+      }
+      console.warn('API de eliminacion no disponible, ejecutando fallback directo:', apiErr);
+    }
+  }
+
+  if (membershipId) {
+    try {
+      await pb.collection('community_memberships').delete(membershipId);
+    } catch (err) {
+      console.warn('Error al eliminar membresia:', err);
+    }
   }
   if (residentId) {
     try {
       await pb.collection('residents').delete(residentId);
     } catch (err) {
       console.warn('Error al eliminar residente:', err);
+    }
+  }
+  if (currentUserId) {
+    try {
+      await pb.collection('users').delete(currentUserId);
+    } catch (err) {
+      console.warn('Error al eliminar usuario:', err);
+      throw new Error(err?.message || 'No se pudo eliminar el usuario.');
     }
   }
 }

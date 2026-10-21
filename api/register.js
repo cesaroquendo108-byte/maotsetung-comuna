@@ -600,24 +600,39 @@ export default async function handler(req, res) {
             household: household.id,
             resident: resident.id,
             status: 'active',
-            notes: 'Registro fiduciario completado con validación de Cédula y RIF.',
+            notes: 'Registro fiduciario completado con validacion de Cedula y RIF.',
             ...(isAdminEmail ? { role: 'admin' } : {}),
           },
         });
       } else {
-        membership = await pbRequest('/api/collections/community_memberships/records', {
-          method: 'POST',
-          token,
-          body: {
-            community: community.id,
-            user: targetUserId,
-            household: household.id,
-            resident: resident.id,
-            role: isAdminEmail ? 'admin' : 'regular',
-            status: 'active',
-            notes: 'Registro fiduciario completado con validación de Cédula y RIF.',
-          },
-        });
+        const residentMemSearch = await pbRequest(`/api/collections/community_memberships/records?perPage=1&filter=${encode(`community = "${community.id}" && resident = "${resident.id}"`)}`, { token });
+        if (residentMemSearch.items?.length) {
+          membership = await pbRequest(`/api/collections/community_memberships/records/${residentMemSearch.items[0].id}`, {
+            method: 'PATCH',
+            token,
+            body: {
+              user: targetUserId,
+              household: household.id,
+              status: 'active',
+              notes: 'Registro fiduciario transferido o regularizado a cuenta actual.',
+              ...(isAdminEmail ? { role: 'admin' } : {}),
+            },
+          });
+        } else {
+          membership = await pbRequest('/api/collections/community_memberships/records', {
+            method: 'POST',
+            token,
+            body: {
+              community: community.id,
+              user: targetUserId,
+              household: household.id,
+              resident: resident.id,
+              role: isAdminEmail ? 'admin' : 'regular',
+              status: 'active',
+              notes: 'Registro fiduciario completado con validacion de Cedula y RIF.',
+            },
+          });
+        }
       }
     }
 

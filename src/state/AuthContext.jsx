@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import pb, { currentUser, DEMO_ENABLED, login as passwordLogin, loginGoogle, logout as pbLogout } from '../lib/pocketbase.js';
+import pb, { currentUser, DEMO_ENABLED, login as passwordLogin, loginGoogle, logout as pbLogout, registerWithPassword } from '../lib/pocketbase.js';
 import { demoCommunity, demoHousehold } from '../lib/demoData.js';
 import { getMemberships } from '../lib/repository.js';
 import { isAuthorizedAdmin } from '../lib/permissions.js';
@@ -94,6 +94,22 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const signUpPassword = async ({ email, password, passwordConfirm, name }) => {
+    setError('');
+    setLoading(true);
+    try {
+      const record = await registerWithPassword({ email, password, passwordConfirm, name });
+      setUser(record);
+      setIsDemo(false);
+      return record;
+    } catch (e) {
+      setError(e?.message || 'No se pudo crear la cuenta.');
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const enterDemo = () => {
     if (!DEMO_ENABLED) return;
     setIsDemo(true);
@@ -157,6 +173,7 @@ export function AuthProvider({ children }) {
     demoEnabled: DEMO_ENABLED,
     signInGoogle,
     signInPassword,
+    signUpPassword,
     enterDemo,
     retryMemberships,
     setDemoRole,

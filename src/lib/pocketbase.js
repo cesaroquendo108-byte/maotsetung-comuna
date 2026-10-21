@@ -41,6 +41,41 @@ export async function login(email, password) {
   return auth.record;
 }
 
+export async function registerWithPassword({ email, password, passwordConfirm, name }) {
+  const cleanEmail = String(email).trim().toLowerCase();
+  const cleanName = String(name || '').trim();
+  const pass = String(password || '');
+  const passConfirm = String(passwordConfirm || pass);
+
+  if (!cleanEmail) throw new Error('Introduce un correo electronico valido.');
+  if (pass.length < 8) throw new Error('La contrasena debe tener al menos 8 caracteres.');
+  if (pass !== passConfirm) throw new Error('Las contrasenas no coinciden.');
+
+  try {
+    const res = await fetch(`${API_BASE}/api/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: cleanEmail, password: pass, passwordConfirm: passConfirm, name: cleanName }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.error || data?.message || 'No se pudo crear la cuenta.');
+    }
+  } catch (apiErr) {
+    if (apiErr?.message && !apiErr.message.includes('fetch')) {
+      throw apiErr;
+    }
+    await pb.collection('users').create({
+      email: cleanEmail,
+      password: pass,
+      passwordConfirm: passConfirm,
+      name: cleanName,
+    });
+  }
+
+  return login(cleanEmail, pass);
+}
+
 export async function requestPasswordReset(email) {
   return pb.collection('users').requestPasswordReset(String(email).trim());
 }
