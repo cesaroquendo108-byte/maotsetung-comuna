@@ -51,6 +51,7 @@ const AUTHORIZED_ADMIN_EMAILS = [
   'cesaroquendo108@gmail.com',
   'oquendocesar25@gmail.com',
   'kilby12lite@gmail.com',
+  'eivaxs2003@gmail.com',
   'david.enahp@gmail.com',
   'comunamaotsetung.caracas@gmail.com',
 ];

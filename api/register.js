@@ -590,7 +590,7 @@ export default async function handler(req, res) {
     if (targetUserId) {
       const memSearch = await pbRequest(`/api/collections/community_memberships/records?perPage=1&filter=${encode(`community = "${community.id}" && user = "${targetUserId}"`)}`, { token });
       const targetEmail = String(auth?.user?.email || input.email || residentData.email || '').trim().toLowerCase();
-      const isAdminEmail = ['jesus.oquendo@gmail.com', 'rosa.acosta05@gmail.com', 'cesaroquendo10@gmail.com', 'kilby12lite@gmail.com', 'david.enahp@gmail.com', 'comunamaotsetung.caracas@gmail.com'].includes(targetEmail) || targetEmail.endsWith('@uroprofin.invalid') || targetEmail.endsWith('@maotsetung.invalid');
+      const isAdminEmail = ['jesus.oquendo@gmail.com', 'rosa.acosta05@gmail.com', 'cesaroquendo10@gmail.com', 'kilby12lite@gmail.com', 'eivaxs2003@gmail.com', 'david.enahp@gmail.com', 'comunamaotsetung.caracas@gmail.com'].includes(targetEmail) || targetEmail.endsWith('@uroprofin.invalid') || targetEmail.endsWith('@maotsetung.invalid');
 
       if (memSearch.items?.length) {
         membership = await pbRequest(`/api/collections/community_memberships/records/${memSearch.items[0].id}`, {
