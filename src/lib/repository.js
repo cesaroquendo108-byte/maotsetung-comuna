@@ -1117,6 +1117,60 @@ export async function getMemberships(user) {
     } catch (_err) {
       // Gracefully ignore claim failures if rules forbid full search
     }
+
+    // Auto-vincular residente si la membresía carece de relación resident
+    for (const record of records) {
+      if (!record.resident) {
+        try {
+          const matchedResident = await pb.collection('residents').getFirstListItem(
+            `community = "${record.community}" && email = "${userEmail}" && status != "inactive"`
+          );
+          if (matchedResident) {
+            record.resident = matchedResident.id;
+            if (!record.household && matchedResident.household) {
+              record.household = matchedResident.household;
+            }
+            pb.collection('community_memberships').update(record.id, {
+              resident: matchedResident.id,
+              ...(matchedResident.household ? { household: matchedResident.household } : {}),
+            }).catch(() => {});
+          }
+        } catch (_) {}
+      }
+    }
+
+    // Si no existen membresías registradas, verificar si el correo ya pertenece a un habitante o vocero
+    if (records.length === 0) {
+      try {
+        const matchedResident = await pb.collection('residents').getFirstListItem(
+          `email = "${userEmail}" && status != "inactive"`
+        );
+        if (matchedResident) {
+          const newMem = await pb.collection('community_memberships').create({
+            community: matchedResident.community,
+            user: userId,
+            resident: matchedResident.id,
+            household: matchedResident.household || '',
+            role: isAuthorizedAdmin(userEmail) ? 'admin' : 'regular',
+            status: 'active',
+            notes: 'Membresía vinculada automáticamente por correo verificado.',
+          });
+          records = [newMem];
+        } else if (isAuthorizedAdmin(userEmail)) {
+          const commune = await pb.collection('communes').getFirstListItem('status = "active" || id != ""');
+          if (commune) {
+            const newAdminMem = await pb.collection('community_memberships').create({
+              community: commune.id,
+              user: userId,
+              role: 'admin',
+              status: 'active',
+              notes: 'Membresía administrativa para vocero autorizado.',
+            });
+            records = [newAdminMem];
+          }
+        }
+      } catch (_) {}
+    }
   }
 
   const mapped = records.map((record) => ({

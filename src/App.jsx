@@ -146,8 +146,41 @@ export default function App() {
     );
   }
 
-  // Toda cuenta, sin importar su rol, debe tener una identidad (Cédula + RIF) vinculada antes de entrar al portal.
-  const hasLinkedIdentity = Boolean(auth.membership?.resident) || auth.isDemo;
+  // Si hubo un error temporal conectando con el servidor, ofrecer reintento en vez de forzar registro
+  if (auth.membershipError && !auth.membership && !auth.isDemo) {
+    return (
+      <div className="app-loading" style={{ gap: '1rem', padding: '2rem' }}>
+        <Brand />
+        <p style={{ color: '#B45309', maxWidth: '420px', textAlign: 'center', fontSize: '0.9rem', lineHeight: '1.4' }}>
+          {auth.membershipError}
+        </p>
+        <button
+          type="button"
+          className="primary-button"
+          style={{ minWidth: '180px' }}
+          onClick={() => auth.retryMemberships()}
+        >
+          Reintentar conexión
+        </button>
+        <button
+          type="button"
+          className="text-button"
+          onClick={auth.signOut}
+          style={{ marginTop: '0.5rem' }}
+        >
+          Cerrar sesión
+        </button>
+      </div>
+    );
+  }
+
+  const isPlatformAdmin = auth.role === 'admin' || isAuthorizedAdmin(auth.user);
+  const hasLinkedIdentity = isPlatformAdmin
+    || Boolean(auth.membership?.resident)
+    || Boolean(auth.membership?.household)
+    || (Array.isArray(auth.memberships) && auth.memberships.some((m) => Boolean(m.resident) || Boolean(m.household) || m.role === 'admin'))
+    || auth.isDemo;
+
   if (!hasLinkedIdentity) {
     return (
       <Suspense fallback={<div className="app-loading"><Brand /><p>Cargando registro…</p></div>}>

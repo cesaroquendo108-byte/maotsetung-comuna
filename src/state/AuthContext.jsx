@@ -51,18 +51,27 @@ export function AuthProvider({ children }) {
       .then((records) => {
         if (!active) return;
         setMemberships(records);
-        setMembership((current) => records.find((record) => record.id === current?.id) || records[0] || null);
+        setMembership((current) => {
+          if (current?.id && records.some((r) => r.id === current.id)) {
+            return records.find((r) => r.id === current.id);
+          }
+          return records.find((r) => r.resident && r.status === 'active')
+            || records.find((r) => r.household && r.status === 'active')
+            || records.find((r) => r.role === 'admin')
+            || records[0]
+            || null;
+        });
       })
-      .catch(() => {
+      .catch((err) => {
         if (active) {
           setMemberships([]);
           setMembership(null);
-          setMembershipError('No pudimos verificar tus permisos con el servidor. No enviaremos una solicitud nueva hasta confirmar tu estado.');
+          setMembershipError(err?.message || 'No pudimos verificar tus permisos con el servidor. No enviaremos una solicitud nueva hasta confirmar tu estado.');
         }
       })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [user, isDemo, membershipReloadKey]);
+  }, [user?.id, isDemo, membershipReloadKey]);
 
   const signInGoogle = async () => {
     setError('');
@@ -71,6 +80,18 @@ export function AuthProvider({ children }) {
       const record = await loginGoogle();
       setUser(record);
       setIsDemo(false);
+      clearMembershipCache();
+      try {
+        const records = await getMemberships(record.id);
+        setMemberships(records);
+        const activeMem = records.find((r) => r.resident && r.status === 'active')
+          || records.find((r) => r.household && r.status === 'active')
+          || records.find((r) => r.role === 'admin')
+          || records[0]
+          || null;
+        setMembership(activeMem);
+        setMembershipError('');
+      } catch (_) {}
     } catch (e) {
       setError(e?.message || 'No pudimos iniciar sesión con Google.');
       throw e;
@@ -86,6 +107,18 @@ export function AuthProvider({ children }) {
       const record = await passwordLogin(email, password);
       setUser(record);
       setIsDemo(false);
+      clearMembershipCache();
+      try {
+        const records = await getMemberships(record.id);
+        setMemberships(records);
+        const activeMem = records.find((r) => r.resident && r.status === 'active')
+          || records.find((r) => r.household && r.status === 'active')
+          || records.find((r) => r.role === 'admin')
+          || records[0]
+          || null;
+        setMembership(activeMem);
+        setMembershipError('');
+      } catch (_) {}
     } catch (e) {
       setError('Revisa el correo y la contraseña e intenta de nuevo.');
       throw e;
@@ -150,7 +183,12 @@ export function AuthProvider({ children }) {
       setLoading(true);
       const records = await getMemberships(user.id);
       setMemberships(records);
-      const activeMem = records.find((record) => record.id === membership?.id) || records[0] || null;
+      const activeMem = records.find((record) => record.id === membership?.id)
+        || records.find((r) => r.resident && r.status === 'active')
+        || records.find((r) => r.household && r.status === 'active')
+        || records.find((r) => r.role === 'admin')
+        || records[0]
+        || null;
       setMembership(activeMem);
       setMembershipError('');
       return records;
