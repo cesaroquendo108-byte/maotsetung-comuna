@@ -225,7 +225,7 @@ export async function submitResidentRegistration(payload) {
           code: householdCode,
           legacySequence: numericSeq,
           address: dwellingAddress,
-          reference: `Zona ${zoneCode} · Casa ${houseNumber}${houseSuffix ? ` (${houseSuffix})` : ''}`,
+          reference: `CC ${zoneCode} · Casa ${houseNumber}${houseSuffix ? ` (${houseSuffix})` : ''}`,
           status: 'active',
         });
       } catch (_) {
@@ -233,7 +233,7 @@ export async function submitResidentRegistration(payload) {
           community: community.id,
           code: householdCode,
           address: dwellingAddress,
-          reference: `Zona ${zoneCode} · Casa ${houseNumber}${houseSuffix ? ` (${houseSuffix})` : ''}`,
+          reference: `CC ${zoneCode} · Casa ${houseNumber}${houseSuffix ? ` (${houseSuffix})` : ''}`,
           status: 'active',
         });
       }

@@ -40,7 +40,7 @@ function HouseholdView({ onAction, household, members, isDemo, pagination, loadi
   const tenure = headMember?.housingTenure || (isDemo ? 'propia' : 'propia');
   const zone = headMember?.zoneCode || '';
   const houseNum = headMember?.houseNumber || '';
-  const streetAddress = headMember?.dwellingAddress || household?.address || (zone && houseNum ? `Zona ${zone} · Casa ${houseNum}` : (isDemo ? demoHousehold.address : COMMUNITY_CONFIG.name));
+  const streetAddress = headMember?.dwellingAddress || household?.address || (zone && houseNum ? `CC ${zone} · Casa ${houseNum}` : (isDemo ? demoHousehold.address : COMMUNITY_CONFIG.name));
   const votingCenter = headMember?.center || (isDemo ? 'E.B.N. Bicentenario Republicano' : '');
 
   return (
@@ -51,7 +51,7 @@ function HouseholdView({ onAction, household, members, isDemo, pagination, loadi
             <p className="eyebrow">MI HOGAR</p>
             <h2>{household?.code || (houseNum ? `CASA ${houseNum}` : 'Hogar Verificado')}</h2>
             <p style={{ color: 'var(--text-main)', marginTop: '2px' }}>{streetAddress}</p>
-            {zone && <small style={{ color: 'var(--muted)', display: 'block', marginTop: '2px' }}>Zona: {zone} {houseNum ? `· Casa Nº ${houseNum}` : ''}</small>}
+            {zone && <small style={{ color: 'var(--muted)', display: 'block', marginTop: '2px' }}>Consejo Comunal: {zone} {houseNum ? `· Casa Nº ${houseNum}` : ''}</small>}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
             <StatusBadge tone="success">Vinculado</StatusBadge>

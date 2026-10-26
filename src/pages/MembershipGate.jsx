@@ -90,22 +90,22 @@ export default function MembershipGate() {
             {state === 'approved' ? 'Solicitud aprobada' : sent ? 'Solicitud enviada' : membershipError ? 'Verificación interrumpida' : state === 'lookup-error' ? 'No pudimos revisar el servidor' : state === 'checking' ? 'Comprobando tu cuenta' : 'Falta confirmar tu hogar'}
           </StatusBadge>
           <h1>{state === 'approved' ? 'Tu solicitud fue aprobada.' : sent ? 'La junta revisará tu hogar.' : membershipError ? 'No asumiremos que te falta acceso.' : state === 'lookup-error' ? 'No pudimos confirmar tu solicitud.' : state === 'checking' ? 'Estamos verificando tu estado.' : 'Encontremos tu registro.'}</h1>
-          <p>{state === 'approved' ? 'Actualiza tu sesión para cargar el consejo y sus servicios.' : sent ? 'La zona y los datos de búsqueda quedaron guardados. No necesitas enviar otra solicitud.' : membershipError || state === 'lookup-error' ? 'Para evitar duplicados, el formulario seguirá cerrado hasta que el servidor confirme tu estado.' : state === 'checking' ? 'Esto suele tardar solo unos segundos.' : 'Selecciona la zona donde vives y escribe al menos una forma de localizarte en el censo.'}</p>
+          <p>{state === 'approved' ? 'Actualiza tu sesión para cargar el consejo y sus servicios.' : sent ? 'El consejo comunal y los datos de búsqueda quedaron guardados. No necesitas enviar otra solicitud.' : membershipError || state === 'lookup-error' ? 'Para evitar duplicados, el formulario seguirá cerrado hasta que el servidor confirme tu estado.' : state === 'checking' ? 'Esto suele tardar solo unos segundos.' : 'Selecciona el consejo comunal donde vives y escribe al menos una forma de localizarte en el censo.'}</p>
 
           {membershipError && <div className="form-error" role="alert"><strong>No pudimos verificar tus permisos.</strong><span>{membershipError}</span><button className="secondary-button" type="button" onClick={retryMemberships}>Reintentar verificación</button></div>}
-          {!membershipError && state === 'lookup-error' && <div className="form-error" role="alert"><strong>No pudimos cargar las zonas o tu solicitud.</strong><span>Revisa la conexión y vuelve a intentar.</span><button className="secondary-button" type="button" onClick={retry}>Volver a comprobar</button></div>}
+          {!membershipError && state === 'lookup-error' && <div className="form-error" role="alert"><strong>No pudimos cargar los consejos comunales o tu solicitud.</strong><span>Revisa la conexión y vuelve a intentar.</span><button className="secondary-button" type="button" onClick={retry}>Volver a comprobar</button></div>}
           {state === 'approved' && <button className="primary-button full" type="button" onClick={retryMemberships}>Actualizar acceso</button>}
 
           {!blocked && !sent && state !== 'approved' && (
             <form onSubmit={submit}>
               <Field label="Código del consejo" required><input value={form.communityCode} onChange={(event) => update('communityCode', event.target.value)} onBlur={() => { const code = form.communityCode.trim().toUpperCase(); if (code && code !== activeCommunityCode) setActiveCommunityCode(code); }} /></Field>
-              <Field label="Zona donde vives" required hint={zoneState === 'ready' ? `${zones.length} zonas disponibles` : 'Cargando zonas…'}>
+              <Field label="Consejo Comunal donde vives" required hint={zoneState === 'ready' ? `${zones.length} consejos disponibles` : 'Cargando consejos…'}>
                 <select value={form.zoneId} onChange={(event) => update('zoneId', event.target.value)} required>
-                  <option value="">Selecciona una zona</option>
+                  <option value="">Selecciona tu consejo comunal</option>
                   {zones.map((zone) => <option key={zone.id} value={zone.id}>{zone.code} · {zone.name}</option>)}
                 </select>
               </Field>
-              <Field label="Código de vivienda" hint="Si ya te dieron un código URP, escríbelo aquí."><input value={form.code} onChange={(event) => update('code', event.target.value)} placeholder="URP-PG-001" /></Field>
+              <Field label="Código de vivienda" hint="Si ya te dieron un código MTT, escríbelo aquí."><input value={form.code} onChange={(event) => update('code', event.target.value)} placeholder="MTT-SAC-001" /></Field>
               <Field label="Cédula" hint="Se usa únicamente para localizar tu registro."><input value={form.idNumber} onChange={(event) => update('idNumber', event.target.value)} placeholder="V-12.345.678" /></Field>
               <Field label="Teléfono" hint="Puedes usar cédula o teléfono; ambos ayudan a confirmar."><input value={form.phone} onChange={(event) => update('phone', event.target.value)} placeholder="0412-0000000" /></Field>
               <Field label="Referencia de la vivienda" required={needsReference} hint="Obligatoria si no tienes código de vivienda."><input value={form.reference} onChange={(event) => update('reference', event.target.value)} placeholder="Portón, escalera o referencia cercana" /></Field>
@@ -113,7 +113,7 @@ export default function MembershipGate() {
               {state === 'error' && <p className="form-error" role="alert">{request?.error || 'No pudimos enviar la solicitud. Intenta de nuevo.'}</p>}
             </form>
           )}
-          {!membershipError && state !== 'lookup-error' && state !== 'approved' && <div className="gate-note"><strong>{selectedZone ? `Zona seleccionada: ${selectedZone.name}` : 'Importante'}</strong><p>La coincidencia no aprueba el acceso por sí sola. La junta debe cotejar el hogar por invitación, verificación presencial u otro factor antes de vincular tu cuenta.</p></div>}
+          {!membershipError && state !== 'lookup-error' && state !== 'approved' && <div className="gate-note"><strong>{selectedZone ? `Consejo Comunal: ${selectedZone.name}` : 'Importante'}</strong><p>La coincidencia no aprueba el acceso por sí sola. La junta debe cotejar el hogar por invitación, verificación presencial u otro factor antes de vincular tu cuenta.</p></div>}
         </div>
       </main>
     </div>

@@ -215,13 +215,13 @@ export default function Clap({ role, onAction }) {
                   onChange={(event) => setPaymentSearch(event.target.value)}
                 />
                 <label className="filter-select" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem' }}>
-                  <span>Zona</span>
+                  <span>Consejo Comunal</span>
                   <select
                     value={selectedZone}
                     onChange={(e) => setSelectedZone(e.target.value)}
-                    aria-label="Filtrar por zona"
+                    aria-label="Filtrar por consejo comunal"
                   >
-                    <option value="all">Todas las zonas</option>
+                    <option value="all">Todos los consejos comunales</option>
                     {availableZones.map((z) => (
                       <option key={z} value={z}>{z}</option>
                     ))}
@@ -253,7 +253,7 @@ export default function Clap({ role, onAction }) {
                       {item.isMatched && item.houseNumber ? (
                         <div>
                           <strong style={{ display: 'block', color: '#0F172A', fontSize: '0.85rem' }}>
-                            Zona {item.zone} · Casa {item.houseNumber}
+                            CC {item.zone} · Casa {item.houseNumber}
                           </strong>
                           <small style={{ color: '#64748B' }}>{item.allocation}</small>
                         </div>

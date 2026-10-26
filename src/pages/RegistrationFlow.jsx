@@ -975,8 +975,8 @@ export default function RegistrationFlow({ onCompleted } = {}) {
                 <strong style={{ color: '#0F172A' }}>{cedula.tipo_documento}-{cedula.numero_cedula} · RIF {rif.numero_rif}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #E2E8F0' }}>
-                <span style={{ color: '#64748B' }}>Ubicación:</span>
-                <strong style={{ color: '#0F172A' }}>Zona {social.zoneCode} · Casa {social.houseNumber}</strong>
+                <span style={{ color: '#64748B' }}>Consejo Comunal:</span>
+                <strong style={{ color: '#0F172A' }}>CC {social.zoneCode} · Casa {social.houseNumber}</strong>
               </div>
               {social.cneStatus !== 'not_registered' && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #E2E8F0' }}>
@@ -2834,7 +2834,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
 
                 {social.cneStatus !== 'not_registered' && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '0.75rem' }}>
-                    <small style={{ width: '100%', color: '#64748B', fontSize: '0.75rem' }}>Planteles frecuentes de la zona (toca para autocompletar):</small>
+                    <small style={{ width: '100%', color: '#64748B', fontSize: '0.75rem' }}>Planteles frecuentes en la comuna (toca para autocompletar):</small>
                     {[
                       'U.E. Mariano Picón Salas',
                       'Colegio Fe y Alegría',

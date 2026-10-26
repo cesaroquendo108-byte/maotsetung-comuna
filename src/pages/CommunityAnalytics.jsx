@@ -766,8 +766,8 @@ export default function CommunityAnalytics({ role, onAction, onNavigate }) {
 
           <article className="panel bi-chart-card">
             <div className="bi-chart-card-header">
-              <h3>Concentración por Sector / Zona</h3>
-              <small>Habitantes distribuidos por zonas vecinales</small>
+              <h3>Concentración por Consejo Comunal</h3>
+              <small>Habitantes distribuidos por consejos comunales</small>
             </div>
             <EChart option={zoneBarOption} height={isMobile ? 240 : 280} />
           </article>
@@ -1042,7 +1042,7 @@ export default function CommunityAnalytics({ role, onAction, onNavigate }) {
                       </td>
                       <td>
                         <strong style={{ fontSize: '0.82rem' }}>
-                          {p.zoneCode ? `Zona ${p.zoneCode}` : 'Sin zona'} {p.houseNumber ? `· Casa ${p.houseNumber}` : ''}
+                          {p.zoneCode ? `CC ${p.zoneCode}` : 'Sin consejo comunal'} {p.houseNumber ? `· Casa ${p.houseNumber}` : ''}
                         </strong>
                         <small style={{ display: 'block', textTransform: 'capitalize', color: '#64748B', fontSize: '0.75rem' }}>
                           Vivienda {p.housingTenure}
