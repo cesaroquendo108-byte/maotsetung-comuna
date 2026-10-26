@@ -28,6 +28,6 @@ export const COMMUNITY_CONFIG = {
     { id: 'cc-4', code: 'CC-HDC', name: 'Consejo Comunal Hornos de Cal', shortName: 'Hornos de Cal', abbreviation: 'HDC' },
     { id: 'cc-5', code: 'CC-MRN', name: 'Consejo Comunal Marín', shortName: 'Marín', abbreviation: 'MRN' },
   ],
-  defaultCouncilCode: 'CC-SAC',
+  defaultCouncilCode: 'SAC',
   contactEmail: 'comunamaotsetung.caracas@gmail.com',
 };

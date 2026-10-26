@@ -113,7 +113,7 @@ export default function Community({ role, onAction }) {
           {reports.map((incident) => (
             <article key={incident.id}>
               <span className={`incident-glyph incident-glyph--${incident.tone}`}>{incident.category.charAt(0)}</span>
-              <div><p><strong>{incident.title}</strong><StatusBadge tone={incident.status === 'En seguimiento' ? 'warning' : 'info'}>{incident.status}</StatusBadge></p><small>{incident.zone || 'Zona no indicada'} · Actualizado {isDemo ? String(incident.updated || 'sin fecha').toLowerCase() : incident.updated ? new Date(incident.updated).toLocaleDateString('es-VE') : 'sin fecha'}</small></div>
+              <div><p><strong>{incident.title}</strong><StatusBadge tone={incident.status === 'En seguimiento' ? 'warning' : 'info'}>{incident.status}</StatusBadge></p><small>{incident.zone || 'Consejo comunal no indicado'} · Actualizado {isDemo ? String(incident.updated || 'sin fecha').toLowerCase() : incident.updated ? new Date(incident.updated).toLocaleDateString('es-VE') : 'sin fecha'}</small></div>
               <div className="report-volume"><strong>{incident.reports}</strong><small>reportes</small></div>
               <StatusBadge tone="neutral">Resumen agregado</StatusBadge>
             </article>

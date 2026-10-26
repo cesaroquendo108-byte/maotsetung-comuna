@@ -51,7 +51,7 @@ export default function Profile({ onAction }) {
             <p className="eyebrow">AVISOS</p><h2>Notificaciones</h2><p>Elige que novedades deseas recibir.</p>
             {[
               ['clap', 'Jornadas CLAP', 'Pago, validacion y fecha de entrega'],
-              ['services', 'Servicios', 'Agua, luz, gas y averias de tu zona'],
+              ['services', 'Servicios', 'Agua, luz, gas y averias de tu consejo comunal'],
               ['surveys', 'Encuestas', 'Gas, juguetes y consultas comunitarias'],
             ].map(([key, label, description]) => (
               <label className="toggle-row" key={key}><span><strong>{label}</strong><small>{description}</small></span><input type="checkbox" checked={notifications[key]} onChange={(event) => setNotifications({ ...notifications, [key]: event.target.checked })} /><i /></label>

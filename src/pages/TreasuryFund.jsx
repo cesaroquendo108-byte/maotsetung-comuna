@@ -377,7 +377,7 @@ export default function TreasuryFund({ role, onAction }) {
               <div className="toolbar-actions">
                 <input
                   aria-label="Buscar aporte"
-                  placeholder="Buscar por zona o casa (ej: Casa 1006)…"
+                  placeholder="Buscar por consejo comunal o casa (ej: Casa 1006)…"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />

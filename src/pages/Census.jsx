@@ -463,8 +463,8 @@ export default function Census({ role, onAction, onNavigate }) {
       {!isDemo && <AsyncDataState loading={live.loading} error={live.error} onRetry={live.reload} loadingLabel="Cargando el censo..." />}
 
       {(isDemo || (!live.loading && !live.error)) && (!operator ? (
-        (isDemo || household) ? (
-          <HouseholdView onAction={onAction} household={isDemo ? demoHousehold : household} members={isDemo ? demoHousehold.members : liveResidents} isDemo={isDemo} pagination={isDemo ? { ...pagination, totalItems: demoHousehold.members.length } : pagination} loading={false} error="" role={role} />
+        (isDemo || household || liveResidents.length > 0) ? (
+          <HouseholdView onAction={onAction} household={isDemo ? demoHousehold : (household || { id: membership?.household, code: liveResidents[0]?.household || 'Hogar Verificado' })} members={isDemo ? demoHousehold.members : liveResidents} isDemo={isDemo} pagination={isDemo ? { ...pagination, totalItems: demoHousehold.members.length } : pagination} loading={false} error="" role={role} />
         ) : (
           <section className="panel" style={{ textAlign: 'center', padding: '40px 24px' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--meta)', marginBottom: '12px', display: 'block' }}>home</span>

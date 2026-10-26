@@ -104,8 +104,14 @@ async function handleDeleteAccount(req, res) {
       'cesaroquendo10@gmail.com',
       'kilby12lite@gmail.com',
       'eivaxs2003@gmail.com',
+      'david.enahp@gmail.com',
+      'comunamaotsetung.caracas@gmail.com',
     ];
-    if (protectedEmails.includes(userEmail) || userEmail.endsWith('@uroprofin.invalid')) {
+    if (
+      protectedEmails.includes(userEmail) ||
+      userEmail.endsWith('@uroprofin.invalid') ||
+      userEmail.endsWith('@maotsetung.invalid')
+    ) {
       return json(res, 403, { error: 'Las cuentas administrativas maestras no pueden ser eliminadas automaticamente.' });
     }
 

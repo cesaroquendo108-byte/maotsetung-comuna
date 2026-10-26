@@ -61,7 +61,7 @@ export default function ConsolidatedCensus() {
     <div className="page">
       <PageHeader
         eyebrow="ADMINISTRACIÓN / CENSO CONSOLIDADO"
-        title="Zonas, viviendas y familias"
+        title="Consejos comunales, viviendas y familias"
         description="La vivienda física se mantiene separada de la familia censal y de las personas que la integran."
         actions={<StatusBadge tone={isDemo ? 'warning' : 'success'}>{isDemo ? 'Vista de demostración' : 'Datos operativos'}</StatusBadge>}
       />
@@ -70,7 +70,7 @@ export default function ConsolidatedCensus() {
 
       {(isDemo || (!live.loading && !live.error)) && <>
         <section className="metrics-grid" aria-label="Resumen del censo consolidado">
-          <Metric label="Zonas" value={summary?.zones ?? '—'} detail="Hojas históricas convertidas" />
+          <Metric label="Consejos Comunales" value={summary?.zones ?? '—'} detail="Ámbitos de la Comuna" />
           <Metric label="Viviendas" value={summary?.dwellings ?? '—'} detail={`${summary?.provisionalDwellings ?? 0} provisionales`} tone="warning" />
           <Metric label="Familias" value={summary?.families ?? '—'} detail={`${summary?.familiesInReview ?? 0} para revisión`} />
           <Metric label="Personas" value={summary?.people ?? '—'} detail="Integrantes vinculados" tone="accent" />
@@ -80,12 +80,12 @@ export default function ConsolidatedCensus() {
         <section className="census-insight-grid">
           <article className="panel census-table-panel">
             <header className="table-toolbar">
-              <div><p className="eyebrow">ZONAS</p><h2>Catálogo estable</h2></div>
-              <small>{isDemo ? 'Mostrando ejemplos de 40 zonas' : `${zones.length} zonas`}</small>
+              <div><p className="eyebrow">CONSEJOS COMUNALES</p><h2>Catálogo territorial</h2></div>
+              <small>{isDemo ? 'Mostrando 5 consejos comunales' : `${zones.length} consejos comunales`}</small>
             </header>
             <div className="table-wrap">
               <table>
-                <thead><tr><th>Código</th><th>Zona</th><th>Estado</th><th>Familias</th><th>Viviendas</th></tr></thead>
+                <thead><tr><th>Código</th><th>Consejo Comunal</th><th>Estado</th><th>Familias</th><th>Viviendas</th></tr></thead>
                 <tbody>{zoneRows.map((zone) => (
                   <tr key={zone.id || zone.code}>
                     <td><strong className="mono">{zone.code}</strong></td>
@@ -123,14 +123,14 @@ export default function ConsolidatedCensus() {
           </header>
           {!linkRequests.length && <p className="empty-inline">No hay solicitudes de residentes pendientes.</p>}
           {linkRequests.length > 0 && <div className="table-wrap"><table>
-            <thead><tr><th>Persona</th><th>Zona</th><th>Búsqueda</th><th>Resultado</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Persona</th><th>Consejo Comunal</th><th>Búsqueda</th><th>Resultado</th><th>Acciones</th></tr></thead>
             <tbody>{linkRequests.map((item) => {
               const personName = [item.person?.firstName, item.person?.lastName].filter(Boolean).join(' ') || 'Persona sin coincidencia';
               const query = item.query || {};
               const message = actionState.id === item.id ? actionState.message : '';
               return <tr key={item.id}>
                 <td><strong>{personName}</strong><small className="table-subline">{item.person?.idNumber || query.idNumber || 'Identidad por confirmar'}</small></td>
-                <td>{item.zone ? `${item.zone.code} · ${item.zone.name}` : 'Sin zona'}</td>
+                <td>{item.zone ? `${item.zone.code} · ${item.zone.name}` : 'Sin consejo comunal'}</td>
                 <td><small>{query.code || query.idNumber || query.phone || 'Referencia declarada'}</small></td>
                 <td>{item.dwelling?.code || item.family?.legacyFamilyNumber ? `Hogar ${item.dwelling?.code || 'histórico'} · Familia ${item.family?.legacyFamilyNumber || '—'}` : 'Nuevo hogar para revisión'}</td>
                 <td><div className="row-actions">{role === 'admin' && <><button className="row-action" type="button" disabled={actionState.id === item.id && actionState.status === 'sending'} onClick={() => resolveRequest(item, 'approve')}>Aprobar</button><button className="row-action danger-link" type="button" disabled={actionState.id === item.id && actionState.status === 'sending'} onClick={() => resolveRequest(item, 'reject')}>Rechazar</button></>}{message && <small>{message}</small>}</div></td>

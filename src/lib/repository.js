@@ -203,7 +203,7 @@ export async function submitResidentRegistration(payload) {
     const rawId = String(payload.cedula?.numero_cedula || '').replace(/\D/g, '');
     const nationality = String(payload.cedula?.tipo_documento || 'V').toUpperCase().includes('E') ? 'E' : 'V';
     const idFormatted = `${nationality}-${rawId}`;
-    let zoneCode = String(payload.social?.zoneCode || '').toUpperCase().trim();
+    let zoneCode = String(payload.social?.zoneCode || '').toUpperCase().trim().replace(/^CC[-_]?/, '');
     if (zoneCode === 'PG') zoneCode = 'MNG';
     if (!zoneCode || zoneCode === 'URP') zoneCode = 'SAC';
     const houseNumber = String(payload.social?.houseNumber || '').trim().replace(/[^a-zA-Z0-9-]/g, '') || rawId.slice(-4);

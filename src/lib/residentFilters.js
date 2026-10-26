@@ -101,14 +101,26 @@ export function buildResidentSegmentFilter(segment, today = new Date()) {
       return 'gasProvider = "Gas Caracas"';
     case 'Gas Comunal':
       return '(gasProvider ~ "Comunal" || gasProvider ~ "PDVSA")';
+    case 'CC San Agustín Centro':
+      return buildResidentCouncilFilter('SAC');
+    case 'CC El Manguito':
+      return buildResidentCouncilFilter('MNG');
+    case 'CC La Charneca':
+      return buildResidentCouncilFilter('LCH');
+    case 'CC Hornos de Cal':
+      return buildResidentCouncilFilter('HDC');
+    case 'CC Marín':
+      return buildResidentCouncilFilter('MRN');
     default:
       return '';
   }
 }
 
 export function buildResidentCouncilFilter(council) {
-  const code = escapeFilterValue(council, 20);
-  if (!code || code === 'Todos') return '';
+  const raw = String(council ?? '').trim();
+  if (!raw || raw === 'Todos') return '';
+  const code = escapeFilterValue(raw.replace(/^CC[-_]?/i, '').toUpperCase(), 20);
+  if (!code || code === 'TODOS') return '';
   return `(zoneCode = "${code}" || household.code ~ "${code}")`;
 }
 

@@ -76,4 +76,7 @@ test('el filtro por consejo comunal filtra por zoneCode y household code', () =>
   });
   assert.match(combined, /zoneCode = "MNG" \|\| household\.code ~ "MNG"/);
   assert.match(combined, /firstName ~ "Carmen"/);
+
+  assert.equal(buildResidentCouncilFilter('CC-SAC'), '(zoneCode = "SAC" || household.code ~ "SAC")');
+  assert.equal(buildResidentSegmentFilter('CC El Manguito'), '(zoneCode = "MNG" || household.code ~ "MNG")');
 });

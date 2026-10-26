@@ -10,6 +10,7 @@
     { "source": "/api/fund-contribute", "destination": "/api/fund?action=contribute" },
     { "source": "/api/scan-cedula", "destination": "/api/scan?type=cedula" },
     { "source": "/api/scan-rif", "destination": "/api/scan?type=rif" },
+    { "source": "/api/scan-receipt", "destination": "/api/scan?type=receipt" },
     { "source": "/api/cne/lookup", "destination": "/api/cne?resource=lookup" },
     { "source": "/api/cne/bulk-missing", "destination": "/api/cne?resource=bulk-missing" },
     { "source": "/api/cne/sync-children", "destination": "/api/cne?resource=sync-children" },

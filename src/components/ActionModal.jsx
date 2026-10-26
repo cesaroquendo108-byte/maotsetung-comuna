@@ -33,7 +33,7 @@ const titles = {
   payment: ['Reportar un pago', 'El validador automático se conectará después. Por ahora el reporte queda “en revisión”.'],
   delivery: ['Reportar la entrega', 'Tu confirmación complementa el registro oficial del operador.'],
   pickup: ['Autorizar retiro solidario', 'La persona autorizada podrá retirar hasta 17 bolsas en una misma entrega.'],
-  incident: ['Nuevo reporte comunitario', 'Describe una avería de agua, luz, gas u otra situación de la zona.'],
+  incident: ['Nuevo reporte comunitario', 'Describe una avería de agua, luz, gas u otra situación del consejo comunal.'],
   safety: ['Canal protegido', 'Este reporte será privado y solo podrá verlo personal expresamente autorizado.'],
   gas: ['Encuesta de gas', 'Registra intención y volumen. Esto no constituye un pago.'],
   resident: ['Agregar persona al censo', 'La fecha de nacimiento permite calcular segmentos sin guardar edades desactualizadas.'],
@@ -566,7 +566,7 @@ export default function ActionModal({ type, payload, onClose, onToast }) {
           {type === 'incident' && <div className="form-grid two"><Field label="Categoría" required><select value={form.category} onChange={(e) => set('category', e.target.value)}><option>Agua</option><option>Luz</option><option>Gas</option><option>Seguridad</option><option>Convivencia</option><option>Otro</option></select></Field><Field label="Visibilidad"><select value={form.privacy} onChange={(e) => set('privacy', e.target.value)}><option value="community">Comunitaria (agregada)</option><option value="private">Privada</option></select></Field></div>}
           <Field label="Título" required><input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="Resumen breve" required /></Field>
           <Field label="Descripción" required><textarea rows="5" value={form.description} onChange={(e) => set('description', e.target.value)} placeholder={type === 'safety' ? 'Describe lo necesario para evaluar una atención segura…' : 'Qué ocurre, desde cuándo y a cuántos hogares afecta…'} required /></Field>
-          <Field label="Zona" hint="Indica el sector o calle; evita una dirección exacta en reportes comunitarios."><input value={form.zone} onChange={(e) => set('zone', e.target.value)} placeholder="Sector o calle" /></Field>
+          <Field label="Consejo Comunal / Sector" hint="Indica el consejo comunal o calle; evita una dirección exacta en reportes comunitarios."><input value={form.zone} onChange={(e) => set('zone', e.target.value)} placeholder="Consejo comunal o calle" /></Field>
           <label className="check-row"><input type="checkbox" checked={form.urgent} onChange={(e) => set('urgent', e.target.checked)} /><span><strong>Requiere atención urgente</strong><small>Activa prioridad alta; no sustituye servicios de emergencia.</small></span></label>
           {type === 'incident' && (
             <div className="location-picker-wrapper">
@@ -581,8 +581,8 @@ export default function ActionModal({ type, payload, onClose, onToast }) {
                       set('lat', null);
                       set('lng', null);
                     } else if (!form.lat || !form.lng) {
-                      set('lat', 10.4589);
-                      set('lng', -66.7975);
+                      set('lat', 10.4940);
+                      set('lng', -66.9048);
                     }
                   }}
                 />
@@ -614,7 +614,7 @@ export default function ActionModal({ type, payload, onClose, onToast }) {
         </>}
 
         {type === 'resident' && <>
-          <Field label="Código de hogar" hint="La persona se asociará a este hogar dentro del consejo." required><input value={form.householdCode} onChange={(e) => set('householdCode', e.target.value)} placeholder="URP-A-014" required /></Field>
+          <Field label="Código de hogar" hint="La persona se asociará a este hogar dentro del consejo." required><input value={form.householdCode} onChange={(e) => set('householdCode', e.target.value)} placeholder="MTT-SAC-014" required /></Field>
           <div className="form-grid two">
             <Field label="Nombres" required>
               <input value={form.firstName} onChange={(e) => set('firstName', formatPersonName(e.target.value))} style={{ textTransform: 'capitalize' }} required />
@@ -1024,7 +1024,7 @@ export default function ActionModal({ type, payload, onClose, onToast }) {
         </>}
 
         {type === 'courtesy' && <>
-          <Field label="Código de hogar" required><input value={form.householdCode} onChange={(e) => set('householdCode', e.target.value)} placeholder="URP-A-014" required /></Field>
+          <Field label="Código de hogar" required><input value={form.householdCode} onChange={(e) => set('householdCode', e.target.value)} placeholder="MTT-SAC-014" required /></Field>
           <Field label="Cantidad" required><input type="number" min="1" max="17" value={form.quantity} onChange={(e) => set('quantity', e.target.value)} /></Field>
           <Field label="Motivo" required><select value={form.reason} onChange={(e) => set('reason', e.target.value)} required><option value="">Selecciona un motivo</option><option>Emergencia familiar</option><option>Adulto mayor vulnerable</option><option>Contingencia comunitaria</option><option>Otro motivo aprobado</option></select></Field>
           <Field label="Justificación"><textarea rows="4" value={form.notes} onChange={(e) => set('notes', e.target.value)} required /></Field>
@@ -1045,7 +1045,7 @@ export default function ActionModal({ type, payload, onClose, onToast }) {
 
         {type === 'paymentMatch' && <>
           <div className="info-box"><span className="material-symbols-outlined" style={{ fontSize: '15px' }}>payments</span><p><strong>{new Intl.NumberFormat('es-VE').format(Number(payload?.amount || 0))}</strong><br />{payload?.payerName || 'El archivo no trae nombre de pagador.'}</p></div>
-          <Field label="Código del hogar" hint="Ejemplo: URP-01-053. Confirma el nombre en el censo antes de guardar." required><input value={form.householdCode} onChange={(e) => set('householdCode', e.target.value)} placeholder="URP-01-000" required /></Field>
+          <Field label="Código del hogar" hint="Ejemplo: MTT-SAC-053. Confirma el nombre en el censo antes de guardar." required><input value={form.householdCode} onChange={(e) => set('householdCode', e.target.value)} placeholder="MTT-SAC-000" required /></Field>
           <Field label="Nota de revisión"><textarea rows="4" value={form.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Cómo se confirmó la coincidencia…" /></Field>
         </>}
 

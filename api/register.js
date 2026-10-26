@@ -64,7 +64,7 @@ export default async function handler(req, res) {
 
     const nationality = String(cedula.tipo_documento || 'V').toUpperCase().includes('E') ? 'E' : 'V';
     const idFormatted = `${nationality}-${rawId}`;
-    const zoneCode = String(social.zoneCode || 'CC-SAC').trim().toUpperCase();
+    const zoneCode = String(social.zoneCode || 'SAC').trim().toUpperCase().replace(/^CC[-_]?/, '') || 'SAC';
     
     // House numbering and grouping
     const houseNumber = String(social.houseNumber || '').trim().replace(/[^a-zA-Z0-9-]/g, '') || rawId.slice(-4);

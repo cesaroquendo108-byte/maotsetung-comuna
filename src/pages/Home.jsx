@@ -131,7 +131,7 @@ export default function Home({ role, user, onNavigate, onAction }) {
             {incidents.map((incident) => (
               <div key={incident.id} className="incident-row">
                 <span className={`incident-glyph incident-glyph--${incident.tone}`}>{incident.category.slice(0, 1)}</span>
-                <p><strong>{incident.title}</strong><small>{incident.zone || 'Zona no indicada'} · {isDemo ? String(incident.updated || 'Sin fecha') : incident.updated ? new Date(incident.updated).toLocaleDateString('es-VE') : 'Sin fecha'}</small></p>
+                <p><strong>{incident.title}</strong><small>{incident.zone || 'Consejo comunal no indicado'} · {isDemo ? String(incident.updated || 'Sin fecha') : incident.updated ? new Date(incident.updated).toLocaleDateString('es-VE') : 'Sin fecha'}</small></p>
                 <span>{incident.reports ?? '•'}<small>{incident.status || 'activo'}</small></span>
               </div>
             ))}

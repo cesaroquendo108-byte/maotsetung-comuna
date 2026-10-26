@@ -34,7 +34,28 @@ function extractJsonFromText(rawText) {
 }
 
 function normalizeScanResult(parsed, scanType) {
-  if (!parsed || parsed.es_documento_valido === false) return parsed;
+  if (!parsed) return parsed;
+  if (scanType === 'receipt') {
+    const amountVal = parsed.amountBs != null ? Number(parsed.amountBs) : (parsed.amount != null ? Number(parsed.amount) : null);
+    const refVal = parsed.referenceNumber || parsed.reference || null;
+    return {
+      ...parsed,
+      isPagoMovilReceipt: Boolean(parsed.isPagoMovilReceipt ?? (amountVal != null || refVal != null)),
+      amountBs: Number.isFinite(amountVal) ? amountVal : null,
+      amount: Number.isFinite(amountVal) ? amountVal : null,
+      referenceNumber: refVal ? String(refVal).trim() : null,
+      reference: refVal ? String(refVal).trim() : null,
+      date: parsed.date ? String(parsed.date).trim() : null,
+      originPhone: parsed.originPhone ? String(parsed.originPhone).trim() : null,
+      originBank: parsed.originBank ? String(parsed.originBank).trim() : null,
+      originDocument: parsed.originDocument ? String(parsed.originDocument).trim() : null,
+      destinationBank: parsed.destinationBank ? String(parsed.destinationBank).trim() : null,
+      destinationDocument: parsed.destinationDocument ? String(parsed.destinationDocument).trim() : null,
+      suspicious: Boolean(parsed.suspicious),
+      suspicionReasons: Array.isArray(parsed.suspicionReasons) ? parsed.suspicionReasons : [],
+    };
+  }
+  if (parsed.es_documento_valido === false) return parsed;
   if (scanType === 'rif') {
     const addr = String(parsed.domicilio_fiscal || parsed.fiscalAddress || '').trim();
     parsed.estado = parsed.estado || parsed.state || 'Distrito Capital';
@@ -75,7 +96,29 @@ export default async function handler(req, res) {
     let image = null;
     let prompt = '';
 
-    if (scanType === 'rif') {
+    if (scanType === 'receipt') {
+      image = input.image || input.receiptFile;
+      if (!image) {
+        return json(res, 400, { error: 'Falta la imagen del comprobante de pago.' });
+      }
+      const expectedStr = input.expectedBsAmount != null ? `${Math.round(Number(input.expectedBsAmount))} Bs` : 'No especificado';
+      prompt = `Analiza este comprobante de Pago Móvil bancario venezolano (BDV, Banesco, Mercantil, Provincial, Bancamiga, BNC, etc.). Monto esperado de referencia: ${expectedStr}.
+Extrae los datos visibles sin adivinar y responde únicamente en JSON válido:
+{
+  "isPagoMovilReceipt": true,
+  "referenceNumber": "número exacto de referencia, operación o secuencia bancaria o null",
+  "amountBs": 1000.00,
+  "date": "YYYY-MM-DD o null",
+  "originPhone": "teléfono emisor o null",
+  "originBank": "banco emisor o null",
+  "originDocument": "cédula/RIF emisor o null",
+  "destinationBank": "banco receptor o null",
+  "destinationDocument": "cédula/RIF receptor o null",
+  "suspicious": false,
+  "suspicionReasons": []
+}
+Marca "isPagoMovilReceipt": false y "suspicious": true si la imagen no es un comprobante de pago exitoso o muestra operación fallida/rechazada.`;
+    } else if (scanType === 'rif') {
       image = input.image || input.rifFile;
       if (!image) {
         return json(res, 400, { error: 'Falta la imagen del comprobante RIF.' });

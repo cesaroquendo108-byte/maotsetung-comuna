@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CircleMarker, MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const COUNCIL_CENTER = [10.458795, -66.797386];
+const COUNCIL_CENTER = [10.4940, -66.9048];
 
 function MapClickHandler({ onSelect }) {
   useMapEvents({
@@ -32,7 +32,7 @@ export default function LocationPickerMap({ lat, lng, onSelectLocation }) {
         setGpsLoading(false);
       },
       () => {
-        onSelectLocation(10.4589, -66.7975);
+        onSelectLocation(10.4940, -66.9048);
         setGpsLoading(false);
       }
     );

@@ -463,6 +463,7 @@ export async function scanCedulaDocument(fileOrBase64) {
   }
 
   // Attempt serverless API first if available, otherwise direct vision
+  let serverPayload = null;
   try {
     const headers = { 'Content-Type': 'application/json' };
     if (pb?.authStore?.token) {
@@ -476,12 +477,15 @@ export async function scanCedulaDocument(fileOrBase64) {
     if (apiRes.ok) {
       const data = await apiRes.json();
       const payload = data?.data || data;
-      if (payload?.es_documento_valido) {
-        return formatCedulaData(payload);
+      if (payload && typeof payload === 'object' && ('es_documento_valido' in payload || payload.numero_cedula || payload.numero_rif)) {
+        serverPayload = payload;
       }
     }
   } catch {
     /* Fallback directly to client OpenRouter vision */
+  }
+  if (serverPayload) {
+    return formatCedulaData(serverPayload);
   }
 
   const prompt = `Transcribe all visible text from this image and map to JSON:
@@ -519,6 +523,7 @@ export async function scanRifDocument(fileOrBase64) {
     base64 = await fileToBase64(compressed);
   }
 
+  let serverPayload = null;
   try {
     const headers = { 'Content-Type': 'application/json' };
     if (pb?.authStore?.token) {
@@ -532,12 +537,15 @@ export async function scanRifDocument(fileOrBase64) {
     if (apiRes.ok) {
       const data = await apiRes.json();
       const payload = data?.data || data;
-      if (payload?.es_documento_valido) {
-        return formatRifData(payload);
+      if (payload && typeof payload === 'object' && ('es_documento_valido' in payload || payload.numero_rif || payload.numero_cedula)) {
+        serverPayload = payload;
       }
     }
   } catch {
     /* Fallback directly to client OpenRouter vision */
+  }
+  if (serverPayload) {
+    return formatRifData(serverPayload);
   }
 
   const prompt = `Transcribe all visible text from this image and map to JSON:

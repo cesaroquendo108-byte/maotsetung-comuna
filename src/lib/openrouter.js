@@ -1,3 +1,5 @@
+import pb, { API_BASE } from './pocketbase.js';
+
 const OPENROUTER_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_OPENROUTER_API_KEY)
   || (typeof process !== 'undefined' && process.env?.VITE_OPENROUTER_API_KEY)
   || (typeof process !== 'undefined' && process.env?.OPENROUTER_API_KEY)
@@ -68,6 +70,32 @@ export async function analyzeReceiptImage(fileOrBase64, expectedBsAmount = null)
       dataUrl = await fileToBase64(fileOrBase64);
     } else {
       throw new Error('Formato de archivo no válido.');
+    }
+
+    // 1. Prioritize serverless /api/scan?type=receipt (uses server OPENROUTER_API_KEY safely)
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (pb?.authStore?.token) {
+        headers.Authorization = `Bearer ${pb.authStore.token}`;
+      }
+      const apiRes = await fetch(`${API_BASE}/api/scan?type=receipt`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ image: dataUrl, expectedBsAmount }),
+      });
+      if (apiRes.ok) {
+        const apiJson = await apiRes.json();
+        const serverData = apiJson?.data || apiJson;
+        if (serverData && typeof serverData === 'object' && ('isPagoMovilReceipt' in serverData || 'referenceNumber' in serverData || 'amountBs' in serverData)) {
+          return postProcessResult({ choices: [{ message: { content: JSON.stringify(serverData) } }] }, expectedBsAmount);
+        }
+      }
+    } catch {
+      /* Fallback to direct OpenRouter if client key is configured */
+    }
+
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('El lector óptico requiere conexión con el servidor.');
     }
 
     const expectedAmountStr = expectedBsAmount != null ? Math.round(Number(expectedBsAmount)) : 'Sin monto cotizado';

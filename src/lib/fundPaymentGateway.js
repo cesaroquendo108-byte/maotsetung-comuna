@@ -2,6 +2,7 @@
 // Handles SHA-256 duplicate detection, optical vision receipt extraction, and status classification.
 
 import { fileToBase64 } from './openrouter.js';
+import pb, { API_BASE } from './pocketbase.js';
 
 export const COMMUNITY_PAYMENT_ACCOUNT = {
   bank: 'Banco de Venezuela (BDV 0102)',
@@ -36,12 +37,40 @@ export async function analyzeFundReceipt(file, openRouterKey = '') {
   const apiKey = keys[0] || '';
 
   if (!apiKey) {
-    // Graceful offline mock / client-side parsing fallback
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (pb?.authStore?.token) {
+        headers.Authorization = `Bearer ${pb.authStore.token}`;
+      }
+      const apiRes = await fetch(`${API_BASE}/api/scan?type=receipt`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ image: base64Data, expectedBsAmount: COMMUNITY_PAYMENT_ACCOUNT.monthlyQuotaBs }),
+      });
+      if (apiRes.ok) {
+        const apiJson = await apiRes.json();
+        const parsed = apiJson?.data || apiJson;
+        const amountVal = parsed?.amount != null ? Number(parsed.amount) : (parsed?.amountBs != null ? Number(parsed.amountBs) : null);
+        const refVal = parsed?.reference || parsed?.referenceNumber || null;
+        return {
+          success: true,
+          extraction: {
+            amount: Number.isFinite(amountVal) ? amountVal : null,
+            reference: refVal ? String(refVal).trim() : null,
+            date: parsed?.date || null,
+          },
+          fallback: false,
+        };
+      }
+    } catch {
+      /* Graceful fallback below if offline */
+    }
+    // Graceful offline fallback
     return {
       success: true,
       extraction: {
-        amount: 1000,
-        reference: `PM-${Date.now().toString().slice(-6)}`,
+        amount: null,
+        reference: null,
         date: new Date().toISOString().split('T')[0],
       },
       fallback: true,
