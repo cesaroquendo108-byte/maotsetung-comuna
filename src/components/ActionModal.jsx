@@ -193,7 +193,7 @@ export default function ActionModal({ type, payload, onClose, onToast }) {
       const res = await lookupHistoricalCensus({
         idNumber: rawId,
         nationality: form.nationality || 'V',
-        communityCode: membership?.community || 'URP-001',
+        communityCode: membership?.community || 'MTT-001',
       });
       if (res.found && res.data) {
         const d = res.data;
@@ -308,22 +308,37 @@ export default function ActionModal({ type, payload, onClose, onToast }) {
             notes: form.notes.trim(), status: 'active',
           });
         } else if (type === 'addFamilyMember') {
-          const householdCode = membership?.expand?.household?.code;
-          if (!householdCode) throw new Error('Tu cuenta no tiene un hogar vinculado. Contacta al administrador.');
+          const householdId = membership?.household || membership?.expand?.household?.id;
+          let householdCode = membership?.expand?.household?.code || membership?.householdCode;
+          if (!householdCode && householdId) {
+            try {
+              const hh = await pb.collection('households').getOne(householdId, { fields: 'id,code' });
+              householdCode = hh.code;
+            } catch (_) {}
+          }
+          if (!householdId && !householdCode) throw new Error('Tu cuenta no tiene un hogar vinculado. Contacta al administrador.');
           await createResident({
             community: membership.community,
+            household: householdId,
             householdCode,
             createdBy: user.id,
-            firstName: form.firstName.trim(), lastName: form.lastName.trim(), idNumber: form.idNumber.trim(),
-            nationality: form.nationality, birthDate: form.birthDate || null, sex: form.sex,
-            phone: form.phone.trim(), relationship: form.relationship, gasProvider: form.gasProvider,
+            firstName: form.firstName.trim(),
+            lastName: form.lastName.trim(),
+            idNumber: form.idNumber.trim(),
+            nationality: form.nationality || 'V',
+            birthDate: form.birthDate || null,
+            sex: form.sex || '',
+            phone: form.phone.trim(),
+            relationship: form.relationship.trim() || 'Integrante',
+            gasProvider: form.gasProvider || '',
             housingTenure: form.housingTenure || 'propia',
             votingCenterName: (form.votingCenterName || '').trim(),
             communityTrade: (form.communityTrade || '').trim(),
             rifNumber: (form.rifNumber || '').trim().toUpperCase(),
             conditionAffection: form.conditionAffection || 'ninguna',
             chronicDiseases: (form.chronicDiseases || '').trim(),
-            notes: form.notes.trim(), status: 'active',
+            notes: form.notes.trim(),
+            status: 'active',
           });
         } else if (type === 'residentUpdate') {
           if (!payload?.id) throw new Error('No se identificó el registro a actualizar.');
@@ -411,7 +426,14 @@ export default function ActionModal({ type, payload, onClose, onToast }) {
       };
       successful(...(messages[type] || ['Guardado', 'La información se registró correctamente.']));
     } catch (e) {
-      setError(e?.message || 'No fue posible guardar. Revisa los datos e intenta de nuevo.');
+      let errorMsg = e?.message || 'No fue posible guardar. Revisa los datos e intenta de nuevo.';
+      if (e?.data?.data && typeof e.data.data === 'object') {
+        const details = Object.entries(e.data.data)
+          .map(([k, v]) => `${k}: ${v?.message || JSON.stringify(v)}`)
+          .join(', ');
+        if (details) errorMsg = `Error de validación: ${details}`;
+      }
+      setError(errorMsg);
       setState('error');
     }
   };
@@ -715,7 +737,7 @@ export default function ActionModal({ type, payload, onClose, onToast }) {
         {type === 'addFamilyMember' && <>
           <div className="info-box" style={{ background: 'rgba(79, 145, 173, 0.08)', borderColor: 'var(--blue)' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--blue)' }}>home</span>
-            <p>El integrante se registrará directamente en <strong>tu hogar ({membership?.expand?.household?.code || '...'})</strong>. La junta puede revisar el nuevo registro.</p>
+            <p>El integrante se registrará directamente en <strong>tu hogar ({membership?.expand?.household?.code || membership?.householdCode || 'tu hogar asignado'})</strong>. La junta puede revisar el nuevo registro.</p>
           </div>
           <div className="form-grid two">
             <Field label="Nombres" required>

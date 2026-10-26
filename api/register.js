@@ -11,6 +11,7 @@ import {
 import checkCedulaMatchHandler from './_check_cedula_match.js';
 import confirmHouseholdMatchHandler from './_confirm_household_match.js';
 import censusLookupHandler from './_census_lookup.js';
+import addFamilyMemberHandler from './_add_family_member.js';
 
 function encode(val) {
   return encodeURIComponent(val);
@@ -26,6 +27,9 @@ export default async function handler(req, res) {
   }
   if (action === 'confirm-match' || action === 'confirm-household-match') {
     return confirmHouseholdMatchHandler(req, res);
+  }
+  if (action === 'add-member' || action === 'add-family-member') {
+    return addFamilyMemberHandler(req, res);
   }
 
   if (!allowJsonPost(req, res)) return;

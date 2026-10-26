@@ -1448,17 +1448,95 @@ export async function answerGasSurvey({ membership, provider, wantsRefill, cylin
   );
 }
 
-export async function createResident({ community, householdCode, ...data }) {
-  const code = filterText(householdCode, 60).toUpperCase();
-  if (!code) throw new Error('Indica el código del hogar al que pertenece la persona.');
-  let household;
-  try {
-    household = await pb.collection('households').getFirstListItem(`community = "${community}" && code = "${code}" && status = "active"`, { fields: 'id' });
-  } catch (error) {
-    if (error?.status === 404) throw new Error('No existe un hogar activo con ese código en el consejo.');
-    throw error;
+export async function createResident({ community, household, householdId, householdCode, ...data }) {
+  // 1. Primary: Serverless endpoint with administrative service tokens
+  if (pb.authStore.isValid && pb.authStore.token) {
+    try {
+      const response = await fetch(`${API_BASE}/api/register?action=add-member`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${pb.authStore.token}`,
+        },
+        body: JSON.stringify({
+          community,
+          householdId: household || householdId,
+          householdCode,
+          ...data,
+        }),
+      });
+      const resJson = await response.json().catch(() => ({}));
+      if (response.ok && resJson.resident) {
+        return resJson.resident;
+      }
+      if (!response.ok && response.status !== 404 && response.status !== 502 && response.status !== 503 && response.status !== 504) {
+        throw new Error(resJson.error || resJson.message || 'Error registrando el integrante.');
+      }
+    } catch (apiError) {
+      const msg = String(apiError.message || '');
+      const isNet = msg.includes('fetch failed') || msg.includes('Failed to fetch') || msg.includes('NetworkError');
+      if (!isNet) {
+        throw apiError;
+      }
+    }
   }
-  const resident = await pb.collection('residents').create({ ...data, community, household: household.id });
+
+  // 2. Direct client-side SDK fallback
+  let resolvedHouseholdId = household || householdId;
+  if (!resolvedHouseholdId && householdCode) {
+    const code = filterText(householdCode, 60).toUpperCase();
+    if (code) {
+      try {
+        const hh = await pb.collection('households').getFirstListItem(`community = "${community}" && code = "${code}" && status = "active"`, { fields: 'id' });
+        resolvedHouseholdId = hh.id;
+      } catch (error) {
+        if (error?.status === 404) throw new Error('No existe un hogar activo con ese código en el consejo.');
+        throw error;
+      }
+    }
+  }
+
+  if (!resolvedHouseholdId) {
+    throw new Error('Indica el código u hogar al que pertenece la persona.');
+  }
+
+  const rawId = String(data.idNumber || '').replace(/\D/g, '');
+  const nationality = ['V', 'E', 'OTHER'].includes(String(data.nationality || '').toUpperCase())
+    ? String(data.nationality).toUpperCase()
+    : 'V';
+  const idFormatted = rawId ? `${nationality === 'OTHER' ? 'E' : nationality}-${rawId}` : '';
+  const idQuality = rawId ? 'valid' : 'empty';
+
+  let existing = null;
+  if (rawId) {
+    try {
+      existing = await pb.collection('residents').getFirstListItem(
+        `community = "${community}" && (idNumberNormalized = "${rawId}" || idNumber = "${idFormatted}")`
+      );
+    } catch (_) {}
+  }
+
+  const sanitized = {
+    ...data,
+    community,
+    household: resolvedHouseholdId,
+    idNumber: idFormatted,
+    idNumberNormalized: rawId,
+    idQuality,
+    nationality: rawId ? (nationality === 'OTHER' ? 'E' : nationality) : (data.nationality || 'V'),
+    conditionAffection: data.conditionAffection || 'ninguna',
+    sex: ['F', 'M', 'X'].includes(String(data.sex || '').toUpperCase()) ? String(data.sex).toUpperCase() : '',
+    birthDate: data.birthDate ? String(data.birthDate).split('T')[0].split(' ')[0] : null,
+    status: 'active',
+  };
+
+  let resident;
+  if (existing) {
+    resident = await pb.collection('residents').update(existing.id, sanitized);
+  } else {
+    resident = await pb.collection('residents').create(sanitized);
+  }
+
   if (resident && data.votingCenterName) {
     try {
       const nowIso = new Date().toISOString();
@@ -1709,7 +1787,29 @@ export async function revokeMembershipRole({ membership, memberId }) {
 }
 
 export async function updateResident(id, data) {
-  const updated = await pb.collection('residents').update(id, data);
+  const sanitized = { ...data };
+  if ('idNumber' in sanitized) {
+    const rawId = String(sanitized.idNumber || '').replace(/\D/g, '');
+    const nat = ['V', 'E', 'OTHER'].includes(String(sanitized.nationality || '').toUpperCase())
+      ? String(sanitized.nationality).toUpperCase()
+      : 'V';
+    sanitized.idNumber = rawId ? `${nat === 'OTHER' ? 'E' : nat}-${rawId}` : '';
+    sanitized.idNumberNormalized = rawId;
+    sanitized.idQuality = rawId ? 'valid' : 'empty';
+  }
+  if ('conditionAffection' in sanitized) {
+    sanitized.conditionAffection = sanitized.conditionAffection || 'ninguna';
+  }
+  if ('sex' in sanitized) {
+    sanitized.sex = ['F', 'M', 'X'].includes(String(sanitized.sex || '').toUpperCase()) ? String(sanitized.sex).toUpperCase() : '';
+  }
+  if ('nationality' in sanitized) {
+    sanitized.nationality = ['V', 'E', 'OTHER'].includes(String(sanitized.nationality || '').toUpperCase()) ? String(sanitized.nationality).toUpperCase() : '';
+  }
+  if ('birthDate' in sanitized) {
+    sanitized.birthDate = sanitized.birthDate ? String(sanitized.birthDate).split('T')[0].split(' ')[0] : null;
+  }
+  const updated = await pb.collection('residents').update(id, sanitized);
   if (data.votingCenterName && updated) {
     try {
       const existing = await pb.collection('electoral_profiles').getFirstListItem(`resident = "${id}"`).catch(() => null);

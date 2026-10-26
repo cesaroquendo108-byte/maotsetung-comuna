@@ -200,7 +200,7 @@ async function handleData(req, res) {
     } catch (_) {}
 
     const token = await serviceToken().catch(() => null);
-    const communityCode = 'URP-001';
+    const communityCode = 'MTT-001';
 
     let community = null;
     if (token) {
@@ -321,7 +321,7 @@ async function handleContribute(req, res) {
     const input = bodyOf(req);
     const token = await serviceToken();
 
-    const communityCode = String(input.communityCode || 'URP-001').trim().toUpperCase();
+    const communityCode = String(input.communityCode || 'MTT-001').trim().toUpperCase();
     const community = await findCommunity({ communityCode, token });
 
     const period = String(input.period || new Date().toISOString().slice(0, 7));

@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 
     const residentId = String(input.residentId || '').trim();
     const householdId = String(input.householdId || '').trim();
-    const communityCode = String(input.communityCode || 'URP-001').trim().toUpperCase();
+    const communityCode = String(input.communityCode || 'MTT-001').trim().toUpperCase();
 
     if (!residentId || !householdId) {
       return json(res, 400, { error: 'Los identificadores de residente y hogar son obligatorios.' });

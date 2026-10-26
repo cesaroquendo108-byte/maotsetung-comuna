@@ -271,7 +271,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
   // Load community zones
   useEffect(() => {
     let active = true;
-    getConsolidatedZones('URP-001')
+    getConsolidatedZones(COMMUNITY_CONFIG.code || 'MTT-001')
       .then((items) => {
         if (!active || !items?.length) return;
         setZones(items);
@@ -331,7 +331,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
         const res = await checkCedulaMatch({
           idNumber: rawId,
           nationality: cedula.tipo_documento || 'V',
-          communityCode: 'URP-001',
+          communityCode: COMMUNITY_CONFIG.code || 'MTT-001',
         });
         if (active && res?.matched) {
           setMatchedHousehold(res);
@@ -375,7 +375,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
       await confirmHouseholdMatch({
         residentId: matchedHousehold.resident.id,
         householdId: matchedHousehold.household.id,
-        communityCode: 'URP-001',
+        communityCode: COMMUNITY_CONFIG.code || 'MTT-001',
         ...matchPersonalData,
       });
       setIsSuccess(true);
@@ -444,7 +444,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
     }
 
     try {
-      const res = await lookupHistoricalCensus({ idNumber: rawId, nationality, communityCode: 'URP-001' });
+      const res = await lookupHistoricalCensus({ idNumber: rawId, nationality, communityCode: COMMUNITY_CONFIG.code || 'MTT-001' });
       if (res.found && res.data) {
         const d = res.data;
         if (target === 'spouse') {
@@ -895,7 +895,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
       }
 
       const payload = {
-        communityCode: 'URP-001',
+        communityCode: COMMUNITY_CONFIG.code || 'MTT-001',
         email: user?.email || '',
         cedula: { ...cedula, imageBase64: cedulaB64 },
         rif: { ...rif, imageBase64: rifB64 },
@@ -1757,7 +1757,7 @@ export default function RegistrationFlow({ onCompleted } = {}) {
                   Registra tu consejo comunal y número de casa correlativo para la ruta organizada de entrega de beneficios.
                 </p>
 
-                <div className="reg-grid-2">
+                <div className="reg-grid-3">
                   <Field label={`Consejo Comunal donde vives en ${COMMUNITY_CONFIG.name}`} required>
                     <select
                       value={social.zoneId}
@@ -1778,6 +1778,15 @@ export default function RegistrationFlow({ onCompleted } = {}) {
                       placeholder="Ej: 1006"
                       value={social.houseNumber}
                       onChange={(e) => setSocial({ ...social, houseNumber: e.target.value.replace(/[^0-9A-Za-z-]/g, '') })}
+                    />
+                  </Field>
+
+                  <Field label="Apto / Anexo (Opcional)" hint="Si hay varios anexos en la misma casa">
+                    <input
+                      type="text"
+                      placeholder="Ej: Apto 1, Anexo B..."
+                      value={social.houseSuffix}
+                      onChange={(e) => setSocial({ ...social, houseSuffix: e.target.value.replace(/[^0-9A-Za-z-]/g, '').toUpperCase() })}
                     />
                   </Field>
                 </div>

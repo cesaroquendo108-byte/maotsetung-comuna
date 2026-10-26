@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
     const nationality = String(input.nationality || 'V').toUpperCase().includes('E') ? 'E' : 'V';
     const idFormatted = `${nationality}-${rawId}`;
-    const communityCode = String(input.communityCode || 'URP-001').trim().toUpperCase();
+    const communityCode = String(input.communityCode || 'MTT-001').trim().toUpperCase();
 
     const token = await serviceToken();
     const community = await findCommunity({ communityCode, token });

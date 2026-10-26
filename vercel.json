@@ -20,6 +20,7 @@
     { "source": "/api/delete-account", "destination": "/api/auth?action=delete-account" },
     { "source": "/api/check-cedula-match", "destination": "/api/register?action=check-match" },
     { "source": "/api/confirm-household-match", "destination": "/api/register?action=confirm-match" },
+    { "source": "/api/add-family-member", "destination": "/api/register?action=add-member" },
     { "source": "/api/census-lookup", "destination": "/api/register?action=census-lookup" },
     { "source": "/api/register/census-lookup", "destination": "/api/register?action=census-lookup" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }

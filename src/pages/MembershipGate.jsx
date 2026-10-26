@@ -8,7 +8,7 @@ import {
 } from '../lib/repository.js';
 import { useAuth } from '../state/AuthContext.jsx';
 
-const initialForm = { communityCode: 'URP-001', zoneId: '', code: '', idNumber: '', phone: '', reference: '' };
+const initialForm = { communityCode: 'MTT-001', zoneId: '', code: '', idNumber: '', phone: '', reference: '' };
 
 export default function MembershipGate() {
   const { user, signOut, membershipError, retryMemberships } = useAuth();
