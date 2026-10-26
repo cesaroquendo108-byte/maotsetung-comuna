@@ -1,4 +1,4 @@
-const CACHE = 'maotsetung-shell-v2';
+const CACHE = 'maotsetung-shell-v3';
 const SHELL = ['/', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {

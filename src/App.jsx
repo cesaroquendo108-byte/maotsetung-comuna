@@ -16,7 +16,6 @@ const Home = lazy(() => import('./pages/Home.jsx'));
 const Clap = lazy(() => import('./pages/Clap.jsx'));
 const Census = lazy(() => import('./pages/Census.jsx'));
 const Community = lazy(() => import('./pages/Community.jsx'));
-const TreasuryFund = lazy(() => import('./pages/TreasuryFund.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
 const CommunityAnalytics = lazy(() => import('./pages/CommunityAnalytics.jsx'));
 
@@ -113,20 +112,8 @@ export default function App() {
     }
   }, [auth]);
 
-  if (isTreasuryRoute) {
-    return (
-      <Suspense fallback={<div className="app-loading"><Brand /><p>Cargando fondo comunal…</p></div>}>
-        <div className="treasury-standalone-shell">
-          <header className="treasury-standalone-header">
-            <a href="/" style={{ textDecoration: 'none' }}><Brand compact /></a>
-            <div className="treasury-standalone-actions">
-              <a href="/app" className="primary-button" style={{ textDecoration: 'none' }}>Entrar al Portal</a>
-            </div>
-          </header>
-          <TreasuryFund role={auth.role} onAction={openAction} />
-        </div>
-      </Suspense>
-    );
+  if (isTreasuryRoute && typeof window !== 'undefined' && window.history?.replaceState) {
+    window.history.replaceState({}, '', '/');
   }
 
   if (!auth.user) {
@@ -198,7 +185,6 @@ export default function App() {
   const pages = {
     home: <Home role={auth.role} user={auth.user} onNavigate={navigateToSection} onAction={openAction} />,
     clap: <Clap role={auth.role} onAction={openAction} />,
-    treasury: <TreasuryFund role={auth.role} onAction={openAction} />,
     census: <Census role={auth.role} onAction={openAction} onNavigate={navigateToSection} />,
     community: <Community role={auth.role} onAction={openAction} />,
     profile: <Profile onAction={openAction} />,

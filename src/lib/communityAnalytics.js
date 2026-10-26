@@ -296,258 +296,6 @@ export function buildWaterStorageData(residents = []) {
   return storage;
 }
 
-export function calculateFinvePotentialScore(resident = {}) {
-  const rawInput = resident.sourceValues?.rawInput || resident.rawRecord?.sourceValues?.rawInput || {};
-
-  // 1. Identificación y KYC Bursátil (Máximo 30 puntos)
-  let kycScore = 0;
-  const idNumber = String(resident.idNumber || rawInput.idNumber || '').trim();
-  const hasValidId = Boolean(idNumber && !idNumber.toLowerCase().includes('sin') && !idNumber.toLowerCase().includes('s/c') && /\d{5,9}/.test(idNumber));
-  if (hasValidId) kycScore += 15;
-
-  const rifNumber = String(resident.rifNumber || resident.sourceValues?.rifNumber || rawInput.rifNumber || '').trim();
-  const hasRif = Boolean(rifNumber && /^[VJEPG]-?\d{5,9}-?\d?$/i.test(rifNumber));
-  if (hasRif) kycScore += 15;
-
-  // 2. Capacidad Económica & Rango Demográfico Productivo (Máximo 30 puntos)
-  let economicScore = 0;
-  const age = calculateAge(resident.birthDate);
-  if (age !== null) {
-    if (age >= 21 && age <= 50) {
-      economicScore += 20;
-    } else if ((age >= 18 && age <= 20) || (age >= 51 && age <= 65)) {
-      economicScore += 12;
-    } else if (age > 65) {
-      economicScore += 5;
-    }
-  }
-
-  const trade = String(
-    resident.communityTrade || resident.trade || rawInput.communityTrade || resident.occupation || ''
-  ).trim();
-
-  const highAffinityKeywords = [
-    'contab', 'admin', 'finan', 'comerc', 'negoc', 'ingeni', 'sistemas',
-    'tecnol', 'abogad', 'derech', 'medic', 'salud', 'docent', 'profesor',
-    'tecnic', 'emprend', 'consult', 'geren', 'ventas', 'segur', 'banco',
-    'transporte', 'chofer', 'mecanic', 'arquitect'
-  ];
-  const isHighAffinity = highAffinityKeywords.some((k) => trade.toLowerCase().includes(k));
-  if (isHighAffinity) {
-    economicScore += 10;
-  } else if (trade.length > 2) {
-    economicScore += 6;
-  }
-
-  // 3. Conectividad Digital & Canales de Contacto (Máximo 20 puntos)
-  let digitalScore = 0;
-  const phone = String(resident.phone || resident.phone1 || rawInput.phone || '').replace(/[^0-9+]/g, '');
-  const hasPhone = Boolean(phone.length >= 10);
-  if (hasPhone) digitalScore += 10;
-
-  const email = String(resident.email || rawInput.email || '').trim();
-  const hasEmail = Boolean(email && email.includes('@') && !email.endsWith('.invalid'));
-  if (hasEmail) digitalScore += 10;
-
-  // 4. Arraigo Patrimonial & Liderazgo en el Hogar (Máximo 20 puntos)
-  let stabilityScore = 0;
-  const tenure = String(resident.housingTenure || rawInput.housingTenure || 'propia').toLowerCase().trim();
-  if (tenure === 'propia') {
-    stabilityScore += 10;
-  } else if (tenure === 'alquilada') {
-    stabilityScore += 7;
-  } else {
-    stabilityScore += 5;
-  }
-
-  const isHead = resident.isHouseholdHead === true || resident.isHouseholdHead === 'si' || String(resident.relationship || '').toLowerCase().includes('jef');
-  const isIndependentAdult = String(resident.relationship || '').toLowerCase().includes('cóny') || (age !== null && age >= 21);
-  if (isHead) {
-    stabilityScore += 10;
-  } else if (isIndependentAdult) {
-    stabilityScore += 8;
-  } else {
-    stabilityScore += 4;
-  }
-
-  const totalScore = Math.min(100, Math.max(0, kycScore + economicScore + digitalScore + stabilityScore));
-
-  let tier = 'Bajo';
-  let tierLabel = 'En Maduración';
-  let tierColor = '#94A3B8';
-  if (totalScore >= 75) {
-    tier = 'Alto';
-    tierLabel = 'Calificado Finve';
-    tierColor = '#059669';
-  } else if (totalScore >= 50) {
-    tier = 'Medio';
-    tierLabel = 'Prospecto en Desarrollo';
-    tierColor = '#D97706';
-  }
-
-  const strengths = [];
-  if (hasValidId && hasRif) strengths.push('KYC Bursátil Completo');
-  else if (hasValidId) strengths.push('Cédula Verificada');
-  if (age !== null && age >= 21 && age <= 50) strengths.push(`PEA Activa (${age} años)`);
-  if (isHighAffinity && trade) strengths.push(`Oficio: ${trade}`);
-  else if (trade) strengths.push(`Actividad: ${trade}`);
-  if (hasPhone && hasEmail) strengths.push('Canal Dual (Móvil + Email)');
-  else if (hasPhone) strengths.push('Contacto Móvil');
-  if (isHead) strengths.push('Jefe de Hogar');
-
-  return {
-    score: totalScore,
-    tier,
-    tierLabel,
-    tierColor,
-    breakdown: {
-      kyc: kycScore,
-      economic: economicScore,
-      digital: digitalScore,
-      stability: stabilityScore,
-    },
-    flags: {
-      hasValidId,
-      hasRif,
-      hasPhone,
-      hasEmail,
-      isHighAffinity,
-      age,
-      trade,
-    },
-    strengths,
-  };
-}
-
-export function buildFinvePotentialData(residents = []) {
-  const activeResidents = residents.filter((r) => r.status !== 'inactive' && r.status !== 'deceased');
-
-  let highCount = 0;
-  let mediumCount = 0;
-  let lowCount = 0;
-
-  let totalAdults = 0;
-  let totalScoreSum = 0;
-  let kycReadyCount = 0;
-  let phoneCount = 0;
-  let tradeDeclaredCount = 0;
-
-  const tradeTally = {};
-  const prospectList = [];
-
-  activeResidents.forEach((r) => {
-    const age = calculateAge(r.birthDate);
-    const isAdult = age === null || age >= 18;
-    if (isAdult) totalAdults += 1;
-
-    const evaluation = calculateFinvePotentialScore(r);
-    totalScoreSum += evaluation.score;
-
-    if (evaluation.tier === 'Alto') highCount += 1;
-    else if (evaluation.tier === 'Medio') mediumCount += 1;
-    else lowCount += 1;
-
-    if (evaluation.flags.hasValidId && evaluation.flags.hasRif) kycReadyCount += 1;
-    if (evaluation.flags.hasPhone) phoneCount += 1;
-    if (evaluation.flags.trade) {
-      tradeDeclaredCount += 1;
-      const tKey = evaluation.flags.trade.charAt(0).toUpperCase() + evaluation.flags.trade.slice(1);
-      tradeTally[tKey] = (tradeTally[tKey] || 0) + 1;
-    }
-
-    prospectList.push({
-      id: r.id,
-      name: `${r.firstName || ''} ${r.lastName || ''}`.trim() || 'Residente',
-      idNumber: r.idNumber || 'S/C',
-      phone: r.phone || '',
-      email: r.email || '',
-      trade: evaluation.flags.trade || 'Sin declarar',
-      zoneCode: r.zoneCode || '',
-      houseNumber: r.houseNumber || '',
-      housingTenure: r.housingTenure || 'Propia',
-      age: age !== null ? age : null,
-      score: evaluation.score,
-      tier: evaluation.tier,
-      tierLabel: evaluation.tierLabel,
-      tierColor: evaluation.tierColor,
-      strengths: evaluation.strengths,
-      hasRif: evaluation.flags.hasRif,
-      rifNumber: r.rifNumber || '',
-      breakdown: evaluation.breakdown,
-    });
-  });
-
-  prospectList.sort((a, b) => b.score - a.score);
-
-  const total = activeResidents.length;
-  const avgScore = total > 0 ? (totalScoreSum / total).toFixed(1) : '0.0';
-  const kycReadyRatio = totalAdults > 0 ? Math.round((kycReadyCount / totalAdults) * 100) : 0;
-  const highTierRatio = totalAdults > 0 ? Math.round((highCount / totalAdults) * 100) : 0;
-
-  return {
-    totalResidents: total,
-    totalAdults,
-    avgScore,
-    highCount,
-    mediumCount,
-    lowCount,
-    highTierRatio,
-    kycReadyCount,
-    kycReadyRatio,
-    phoneCount,
-    tradeDeclaredCount,
-    tradeTally,
-    prospects: prospectList,
-  };
-}
-
-export function exportFinveProspectsCSV(residents = []) {
-  const headers = [
-    'Nombre',
-    'Apellido',
-    'Cedula',
-    'RIF',
-    'Telefono',
-    'Email',
-    'Sector_Zona',
-    'NumeroCasa',
-    'Oficio_Profesion',
-    'TenenciaVivienda',
-    'Edad',
-    'Score_Finve',
-    'Nivel_Finve',
-    'KYC_Bursatil',
-    'Fortalezas',
-  ];
-
-  const { prospects } = buildFinvePotentialData(residents);
-
-  const rows = prospects.map((p) => {
-    const parts = p.name.split(' ');
-    const first = parts[0] || '';
-    const last = parts.slice(1).join(' ') || '';
-    return [
-      escapeCsvValue(first),
-      escapeCsvValue(last),
-      escapeCsvValue(p.idNumber),
-      escapeCsvValue(p.rifNumber || 'Pendiente'),
-      escapeCsvValue(p.phone || ''),
-      escapeCsvValue(p.email || ''),
-      escapeCsvValue(p.zoneCode || ''),
-      escapeCsvValue(p.houseNumber || ''),
-      escapeCsvValue(p.trade),
-      escapeCsvValue(p.housingTenure),
-      escapeCsvValue(p.age !== null ? p.age : ''),
-      escapeCsvValue(p.score),
-      escapeCsvValue(p.tier),
-      escapeCsvValue(p.hasRif ? 'Completo' : 'Solo Cedula'),
-      escapeCsvValue(p.strengths.join(' | ')),
-    ].join(',');
-  });
-
-  return `\uFEFF${headers.join(',')}\r\n${rows.join('\r\n')}`;
-}
-
 function escapeCsvValue(val) {
   if (val === undefined || val === null) return '""';
   let str = String(val).trim();
@@ -581,14 +329,11 @@ export function exportCommunityBiCSV(residents = []) {
     'EnfermedadCronica',
     'EstatusCNE',
     'CentroVotacion',
-    'Score_Finve',
-    'Nivel_Finve',
     'EstatusRegistro',
   ];
 
   const rows = residents.map((r) => {
     const age = calculateAge(r.birthDate);
-    const finve = calculateFinvePotentialScore(r);
     return [
       escapeCsvValue(r.firstName || ''),
       escapeCsvValue(r.lastName || ''),
@@ -609,8 +354,6 @@ export function exportCommunityBiCSV(residents = []) {
       escapeCsvValue(r.chronicDiseases || ''),
       escapeCsvValue(r.electoralProfile?.status || 'Sin verificar'),
       escapeCsvValue(r.electoralProfile?.votingCenterName || ''),
-      escapeCsvValue(finve.score),
-      escapeCsvValue(finve.tier),
       escapeCsvValue(r.status || 'active'),
     ].join(',');
   });
@@ -622,7 +365,7 @@ export function getDemoAnalyticsData() {
   const residents = [
     { id: 'r1', firstName: 'Rosa', lastName: 'Acosta', idNumber: 'V-12456789', rifNumber: 'V-12456789-0', email: 'rosa.acosta@gmail.com', communityTrade: 'Comerciante', sex: 'F', birthDate: '1968-04-12', relationship: 'Jefa de Hogar', zoneCode: 'SAC', houseNumber: '10', phone: '04121112233', gasProvider: 'PDVSA Gas Comunal', gasCylindersCount: '2', gasValveType: 'Pico Rápido', waterTankCapacity: '1000L', cookingAppliance: 'gas_exclusivo', housingTenure: 'Propia', conditionAffection: 'cronica', chronicDiseases: 'Hipertensión', regularMedications: 'Losartán 50mg', isPregnantOrLactating: 'no', petsCount: '1', status: 'active', electoralProfile: { status: 'registered', votingCenterName: 'E.B.N. Bicentenario Republicano' } },
     { id: 'r2', firstName: 'Jesús', lastName: 'Oquendo', idNumber: 'V-11987654', rifNumber: 'V-11987654-2', email: 'jesus.oquendo@gmail.com', communityTrade: 'Técnico Especialista', sex: 'M', birthDate: '1965-09-25', relationship: 'Cónyuge', zoneCode: 'SAC', houseNumber: '10', phone: '04142223344', gasProvider: 'PDVSA Gas Comunal', gasCylindersCount: '2', gasValveType: 'Pico Rápido', waterTankCapacity: '1000L', cookingAppliance: 'gas_exclusivo', housingTenure: 'Propia', conditionAffection: 'cronica', chronicDiseases: 'Diabetes', regularMedications: 'Metformina 850mg', isPregnantOrLactating: 'no', petsCount: '0', status: 'active', electoralProfile: { status: 'registered', votingCenterName: 'E.B.N. Bicentenario Republicano' } },
-    { id: 'r3', firstName: 'César', lastName: 'Oquendo', idNumber: 'V-26543210', rifNumber: 'V-26543210-4', email: 'cesar@finve.net', communityTrade: 'Ingeniero de Software', sex: 'M', birthDate: '1998-03-15', relationship: 'Hijo/a', zoneCode: 'SAC', houseNumber: '10', phone: '04243334455', gasProvider: 'PDVSA Gas Comunal', gasCylindersCount: '2', gasValveType: 'Pico Rápido', waterTankCapacity: '1000L', cookingAppliance: 'gas_exclusivo', housingTenure: 'Propia', conditionAffection: 'ninguna', chronicDiseases: '', regularMedications: '', isPregnantOrLactating: 'no', petsCount: '0', status: 'active', electoralProfile: { status: 'registered', votingCenterName: 'E.B.N. Bicentenario Republicano' } },
+    { id: 'r3', firstName: 'César', lastName: 'Oquendo', idNumber: 'V-26543210', rifNumber: 'V-26543210-4', email: 'cesar.oquendo@ejemplo.ve', communityTrade: 'Ingeniero de Software', sex: 'M', birthDate: '1998-03-15', relationship: 'Hijo/a', zoneCode: 'SAC', houseNumber: '10', phone: '04243334455', gasProvider: 'PDVSA Gas Comunal', gasCylindersCount: '2', gasValveType: 'Pico Rápido', waterTankCapacity: '1000L', cookingAppliance: 'gas_exclusivo', housingTenure: 'Propia', conditionAffection: 'ninguna', chronicDiseases: '', regularMedications: '', isPregnantOrLactating: 'no', petsCount: '0', status: 'active', electoralProfile: { status: 'registered', votingCenterName: 'E.B.N. Bicentenario Republicano' } },
     { id: 'r4', firstName: 'Valeria', lastName: 'Mendoza', idNumber: 'V-28123456', rifNumber: 'V-28123456-1', email: 'valeria.m@gmail.com', communityTrade: 'Administradora', sex: 'F', birthDate: '2001-11-20', relationship: 'Jefa de Hogar', zoneCode: 'MNG', houseNumber: '04', phone: '04164445566', gasProvider: 'PDVSA Gas Comunal', gasCylindersCount: '1', gasValveType: 'Pico Rápido', waterTankCapacity: '500L', cookingAppliance: 'cocina_mixta', housingTenure: 'Alquilada', conditionAffection: 'ninguna', chronicDiseases: 'Asma', regularMedications: 'Salbutamol', isPregnantOrLactating: 'si', petsCount: '2', status: 'active', electoralProfile: { status: 'registered', votingCenterName: 'Liceo Bolivariano San Agustín' } },
     { id: 'r5', firstName: 'Mateo', lastName: 'Mendoza', idNumber: 'S/C', sex: 'M', birthDate: '2023-08-10', relationship: 'Hijo/a', zoneCode: 'MNG', houseNumber: '04', phone: '', gasProvider: 'PDVSA Gas Comunal', gasCylindersCount: '1', gasValveType: 'Pico Rápido', waterTankCapacity: '500L', cookingAppliance: 'cocina_mixta', housingTenure: 'Alquilada', conditionAffection: 'ninguna', chronicDiseases: '', regularMedications: '', isPregnantOrLactating: 'no', petsCount: '0', status: 'active', electoralProfile: null },
     { id: 'r6', firstName: 'Carmen', lastName: 'Rodríguez', idNumber: 'V-6543210', rifNumber: 'V-6543210-0', communityTrade: 'Pensionada', sex: 'F', birthDate: '1947-06-18', relationship: 'Jefa de Hogar', zoneCode: 'LCH', houseNumber: '15', phone: '04125556677', gasProvider: 'PDVSA Gas Comunal', gasCylindersCount: '1', gasValveType: 'Rosca', waterTankCapacity: '1500L', cookingAppliance: 'gas_exclusivo', housingTenure: 'Propia', conditionAffection: 'motora', chronicDiseases: 'Artritis', regularMedications: 'Analgesicos', isPregnantOrLactating: 'no', petsCount: '1', status: 'active', electoralProfile: { status: 'registered', votingCenterName: 'Escuela Experimental Venezuela' } },

@@ -6,7 +6,6 @@ import { useAuth } from '../state/AuthContext.jsx';
 import { downloadCensusExport, getResidentsPage, runCneBulkLookup } from '../lib/repository.js';
 import { useAsyncData } from '../hooks/useAsyncData.js';
 import { formatHousingTenure } from '../lib/formatters.js';
-import { calculateFinvePotentialScore } from '../lib/communityAnalytics.js';
 import { COMMUNITY_CONFIG } from '../config/community.js';
 
 const PAGE_SIZE = 50;
@@ -104,26 +103,6 @@ function HouseholdView({ onAction, household, members, isDemo, pagination, loadi
                   {member.isHouseholdHead && (
                     <span style={{ fontSize: '0.65rem', fontWeight: 700, background: 'rgba(79, 145, 173, 0.15)', color: 'var(--blue, #0284C7)', padding: '1px 5px', borderRadius: '4px' }}>
                       Jefe(a)
-                    </span>
-                  )}
-                  {role === 'admin' && member.finveScore !== undefined && (
-                    <span
-                      title={`Potencial Finve: ${member.finveScore}/100 pts (${member.finveTierLabel})`}
-                      style={{
-                        fontSize: '0.65rem',
-                        fontWeight: 700,
-                        padding: '1px 5px',
-                        borderRadius: '4px',
-                        background: member.finveTier === 'Alto' ? '#ECFDF5' : member.finveTier === 'Medio' ? '#FFFBEB' : '#F1F5F9',
-                        color: member.finveTier === 'Alto' ? '#065F46' : member.finveTier === 'Medio' ? '#92400E' : '#475569',
-                        border: `1px solid ${member.finveTier === 'Alto' ? '#A7F3D0' : member.finveTier === 'Medio' ? '#FDE68A' : '#CBD5E1'}`,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '3px',
-                      }}
-                    >
-                      <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: member.finveTierColor || '#94A3B8' }} />
-                      Finve {member.finveScore}
                     </span>
                   )}
                 </span>
@@ -296,8 +275,6 @@ export default function Census({ role, onAction, onNavigate }) {
       ? gasProvider
       : 'Sin definir';
 
-    const finve = calculateFinvePotentialScore(record);
-
     return {
       id: record.id,
       household: record.expand?.household?.code || household?.code || (houseNumber ? `Casa ${houseNumber}` : 'Sin codigo'),
@@ -314,10 +291,6 @@ export default function Census({ role, onAction, onNavigate }) {
       phone: firstAvailable(record.phone, record.phone1, record.phone2, rawInput.phone),
       age,
       segment: age == null ? 'Sin fecha' : age < 18 ? 'Ninez' : age >= 60 ? 'Adulto mayor' : 'Adulto',
-      finveScore: finve.score,
-      finveTier: finve.tier,
-      finveTierLabel: finve.tierLabel,
-      finveTierColor: finve.tierColor,
       voter,
       center: votingCenter,
       centerAddress: votingCenterAddress,
@@ -603,26 +576,6 @@ export default function Census({ role, onAction, onNavigate }) {
                               {resident.isHouseholdHead && (
                                 <span style={{ fontSize: '0.65rem', fontWeight: 700, background: 'rgba(79, 145, 173, 0.15)', color: 'var(--blue, #0284C7)', padding: '1px 5px', borderRadius: '4px' }}>
                                   Jefe(a)
-                                </span>
-                              )}
-                              {role === 'admin' && resident.finveScore !== undefined && (
-                                <span
-                                  title={`Potencial Finve: ${resident.finveScore}/100 pts (${resident.finveTierLabel})`}
-                                  style={{
-                                    fontSize: '0.65rem',
-                                    fontWeight: 700,
-                                    padding: '1px 5px',
-                                    borderRadius: '4px',
-                                    background: resident.finveTier === 'Alto' ? '#ECFDF5' : resident.finveTier === 'Medio' ? '#FFFBEB' : '#F1F5F9',
-                                    color: resident.finveTier === 'Alto' ? '#065F46' : resident.finveTier === 'Medio' ? '#92400E' : '#475569',
-                                    border: `1px solid ${resident.finveTier === 'Alto' ? '#A7F3D0' : resident.finveTier === 'Medio' ? '#FDE68A' : '#CBD5E1'}`,
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '3px',
-                                  }}
-                                >
-                                  <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: resident.finveTierColor || '#94A3B8' }} />
-                                  Finve {resident.finveScore}
                                 </span>
                               )}
                             </div>

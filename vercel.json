@@ -5,9 +5,6 @@
   "rewrites": [
     { "source": "/api/dwellings", "destination": "/api/structure?resource=dwellings" },
     { "source": "/api/families/:id", "destination": "/api/structure?resource=family&id=:id" },
-    { "source": "/api/fund-rate", "destination": "/api/fund?action=rate" },
-    { "source": "/api/fund-data", "destination": "/api/fund?action=data" },
-    { "source": "/api/fund-contribute", "destination": "/api/fund?action=contribute" },
     { "source": "/api/scan-cedula", "destination": "/api/scan?type=cedula" },
     { "source": "/api/scan-rif", "destination": "/api/scan?type=rif" },
     { "source": "/api/scan-receipt", "destination": "/api/scan?type=receipt" },

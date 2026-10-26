@@ -12,7 +12,6 @@ export default function AppShell({ section, onSection, user, role, community, me
       items: [
         { id: 'home', label: 'Panel', short: 'Inicio', icon: 'home' },
         { id: 'clap', label: 'Jornada CLAP', short: 'CLAP', icon: 'shopping_bag' },
-        { id: 'treasury', label: 'Fondo Comunal', short: 'Fondo', icon: 'account_balance' },
         { id: 'census', label: isAdmin ? 'Censo' : 'Mi Hogar', short: isAdmin ? 'Censo' : 'Hogar', icon: isAdmin ? 'groups' : 'family_restroom' },
       ],
     },

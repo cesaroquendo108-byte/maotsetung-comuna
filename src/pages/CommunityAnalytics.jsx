@@ -12,8 +12,6 @@ import {
   buildCneStatusData,
   buildZoneDistributionData,
   buildWaterStorageData,
-  buildFinvePotentialData,
-  exportFinveProspectsCSV,
   exportCommunityBiCSV,
   getDemoAnalyticsData,
 } from '../lib/communityAnalytics.js';
@@ -39,8 +37,6 @@ export default function CommunityAnalytics({ role, onAction, onNavigate }) {
   }, []);
 
   const [activeTab, setActiveTab] = useState('demografia');
-  const [finveTierFilter, setFinveTierFilter] = useState('Todos');
-  const [finveSearchQuery, setFinveSearchQuery] = useState('');
   const [loading, setLoading] = useState(!isDemo);
   const [error, setError] = useState('');
   const [dataset, setDataset] = useState(() => isDemo ? getDemoAnalyticsData() : null);
@@ -87,18 +83,6 @@ export default function CommunityAnalytics({ role, onAction, onNavigate }) {
   const cneData = useMemo(() => buildCneStatusData(residents), [residents]);
   const zoneData = useMemo(() => buildZoneDistributionData(residents, zones), [residents, zones]);
   const waterData = useMemo(() => buildWaterStorageData(residents), [residents]);
-  const finveData = useMemo(() => buildFinvePotentialData(residents), [residents]);
-
-  const filteredProspects = useMemo(() => {
-    const list = finveData.prospects || [];
-    return list.filter((p) => {
-      const matchTier = finveTierFilter === 'Todos' || p.tier === finveTierFilter;
-      const query = finveSearchQuery.trim().toLowerCase();
-      if (!query) return matchTier;
-      const text = `${p.name} ${p.idNumber} ${p.rifNumber || ''} ${p.trade} ${p.phone} ${p.zoneCode} ${p.houseNumber}`.toLowerCase();
-      return matchTier && text.includes(query);
-    });
-  }, [finveData.prospects, finveTierFilter, finveSearchQuery]);
 
   const handleExportCsv = () => {
     if (!residents.length) return;
@@ -107,21 +91,7 @@ export default function CommunityAnalytics({ role, onAction, onNavigate }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `inteligencia_bi_comunidad_${community?.code || COMMUNITY_CONFIG.code || 'MST-001'}_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleExportFinveCsv = () => {
-    if (!residents.length) return;
-    const csv = exportFinveProspectsCSV(residents);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `prospectos_finve_${community?.code || COMMUNITY_CONFIG.code || 'MST-001'}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `inteligencia_bi_comunidad_${community?.code || COMMUNITY_CONFIG.code || 'MTT-001'}_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -426,115 +396,6 @@ export default function CommunityAnalytics({ role, onAction, onNavigate }) {
     };
   }, [cneData, isMobile]);
 
-  const finveTiersDonutOption = useMemo(() => {
-    const data = [
-      { name: 'Calificado Finve (Alto)', value: finveData.highCount },
-      { name: 'En Desarrollo (Medio)', value: finveData.mediumCount },
-      { name: 'En Maduración (Bajo)', value: finveData.lowCount },
-    ];
-    return {
-      tooltip: { trigger: 'item', formatter: '{b}: <b>{c}</b> ({d}%)' },
-      legend: { bottom: 0, left: 'center', textStyle: { color: '#524c57', fontSize: isMobile ? 10 : 11 }, itemGap: isMobile ? 6 : 10 },
-      series: [{
-        name: 'Segmentación Finve',
-        type: 'pie',
-        radius: isMobile ? ['36%', '60%'] : ['45%', '70%'],
-        center: ['50%', isMobile ? '38%' : '42%'],
-        itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
-        color: ['#059669', '#d97706', '#94a3b8'],
-        data,
-      }],
-    };
-  }, [finveData, isMobile]);
-
-  const finveFunnelOption = useMemo(() => {
-    const stages = [
-      { name: '1. Censo Total', value: finveData.totalResidents },
-      { name: '2. Población Activa (PEA)', value: finveData.totalAdults },
-      { name: '3. Contacto Activo', value: finveData.phoneCount },
-      { name: '4. KYC (Cédula + RIF)', value: finveData.kycReadyCount },
-      { name: '5. Calificados Finve', value: finveData.highCount },
-    ];
-    return {
-      tooltip: {
-        trigger: 'item',
-        formatter: '{b}: <b>{c}</b> personas',
-      },
-      grid: { left: isMobile ? '1%' : '3%', right: isMobile ? '8%' : '10%', bottom: '2%', top: '6%', containLabel: true },
-      xAxis: { type: 'value', splitLine: { lineStyle: { color: '#f0e4e2' } } },
-      yAxis: {
-        type: 'category',
-        inverse: true,
-        data: stages.map((s) => s.name),
-        axisLabel: {
-          color: '#26222b',
-          fontSize: isMobile ? 10 : 11,
-          formatter: (val) => isMobile && val.length > 18 ? val.slice(0, 17) + '…' : val,
-        },
-      },
-      series: [{
-        name: 'Embudo de Calificación',
-        type: 'bar',
-        barMaxWidth: isMobile ? 18 : 22,
-        data: stages.map((s, idx) => ({
-          value: s.value,
-          itemStyle: {
-            color: ['#475569', '#3b82f6', '#0284c7', '#0d9488', '#059669'][idx],
-            borderRadius: [0, 4, 4, 0],
-          },
-        })),
-        label: {
-          show: true,
-          position: 'right',
-          color: '#334155',
-          fontWeight: 700,
-          fontSize: 11,
-        },
-      }],
-    };
-  }, [finveData, isMobile]);
-
-  const finveTradesBarOption = useMemo(() => {
-    const sortedTrades = Object.entries(finveData.tradeTally)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 7);
-    const categories = sortedTrades.map(([k]) => k).reverse();
-    const values = sortedTrades.map(([, v]) => v).reverse();
-    return {
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: { type: 'shadow' },
-        formatter: (params) => {
-          const p = params[0];
-          return `<b>${p.name}</b><br/>${p.marker} Titulares: <b>${p.value}</b>`;
-        },
-      },
-      grid: { left: isMobile ? '1%' : '3%', right: isMobile ? '3%' : '4%', bottom: '2%', top: '6%', containLabel: true },
-      xAxis: { type: 'value', splitLine: { lineStyle: { color: '#f0e4e2' } } },
-      yAxis: {
-        type: 'category',
-        data: categories,
-        axisLabel: {
-          color: '#26222b',
-          fontSize: isMobile ? 10 : 11,
-          formatter: (val) => {
-            if (isMobile && typeof val === 'string' && val.length > 15) {
-              return val.slice(0, 14) + '…';
-            }
-            return val;
-          },
-        },
-      },
-      series: [{
-        name: 'Oficios y Profesiones',
-        type: 'bar',
-        barMaxWidth: isMobile ? 18 : 22,
-        data: values,
-        itemStyle: { color: '#059669', borderRadius: [0, 4, 4, 0] },
-      }],
-    };
-  }, [finveData, isMobile]);
-
   if (!isAdmin) {
     return (
       <div className="page">
@@ -731,7 +592,6 @@ export default function CommunityAnalytics({ role, onAction, onNavigate }) {
           { id: 'servicios', label: 'Servicios & Infraestructura', shortLabel: 'Servicios & Gas', icon: 'propane_tank' },
           { id: 'vulnerabilidad', label: 'Salud & Casos Vulnerables', shortLabel: 'Salud Comunal', icon: 'medical_services' },
           { id: 'electoral', label: 'CNE & Registro Electoral', shortLabel: 'Electoral CNE', icon: 'how_to_vote' },
-          { id: 'finve', label: 'Potencial Finve & Inversión', shortLabel: 'Potencial Finve', icon: 'trending_up' },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -871,257 +731,6 @@ export default function CommunityAnalytics({ role, onAction, onNavigate }) {
             </div>
             <EChart option={cneCenterBarOption} height={isMobile ? 290 : 300} />
           </article>
-        </div>
-      )}
-
-      {/* TAB 5: Potencial Finve & Inversión */}
-      {activeTab === 'finve' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Top KPI Ribbon for Finve */}
-          <div className="bi-kpi-grid">
-            <article className="panel bi-kpi-card">
-              <small className="bi-kpi-label">Calificados Finve (Tier 1)</small>
-              <div className="bi-kpi-val-row">
-                <h2 className="bi-kpi-val" style={{ color: '#059669' }}>{finveData.highCount}</h2>
-                <small className="bi-kpi-unit">titulares</small>
-              </div>
-              <small className="bi-kpi-sub">
-                {finveData.highTierRatio}% de la PEA comunal
-              </small>
-            </article>
-
-            <article className="panel bi-kpi-card">
-              <small className="bi-kpi-label">Tasa Aptitud KYC</small>
-              <div className="bi-kpi-val-row">
-                <h2 className="bi-kpi-val">{finveData.kycReadyRatio}%</h2>
-                <small className="bi-kpi-unit">Cédula + RIF</small>
-              </div>
-              <small className="bi-kpi-sub">
-                {finveData.kycReadyCount} de {finveData.totalAdults} adultos
-              </small>
-            </article>
-
-            <article className="panel bi-kpi-card">
-              <small className="bi-kpi-label">Score Promedio Comunal</small>
-              <div className="bi-kpi-val-row">
-                <h2 className="bi-kpi-val">{finveData.avgScore}</h2>
-                <small className="bi-kpi-unit">/ 100 pts</small>
-              </div>
-              <small className="bi-kpi-sub">
-                Ponderación multicriterio
-              </small>
-            </article>
-
-            <article className="panel bi-kpi-card">
-              <small className="bi-kpi-label">En Desarrollo (Tier 2)</small>
-              <div className="bi-kpi-val-row">
-                <h2 className="bi-kpi-val" style={{ color: '#D97706' }}>{finveData.mediumCount}</h2>
-                <small className="bi-kpi-unit">prospectos</small>
-              </div>
-              <small className="bi-kpi-sub">
-                Score entre 50 y 74 pts
-              </small>
-            </article>
-          </div>
-
-          {/* Charts Row */}
-          <div className="bi-charts-grid">
-            <article className="panel bi-chart-card">
-              <div className="bi-chart-card-header">
-                <h3>Segmentación por Nivel de Aptitud</h3>
-                <small>Calificados Finve (75+) vs En Desarrollo (50-74) vs En Maduración (&lt;50)</small>
-              </div>
-              <EChart option={finveTiersDonutOption} height={isMobile ? 240 : 280} />
-            </article>
-
-            <article className="panel bi-chart-card">
-              <div className="bi-chart-card-header">
-                <h3>Embudo de Conversión Bursátil Comunitario</h3>
-                <small>Progresión desde censo demográfico hasta estatus apto para brokerage BVC</small>
-              </div>
-              <EChart option={finveFunnelOption} height={isMobile ? 240 : 280} />
-            </article>
-
-            <article className="panel bi-chart-card bi-chart-card--wide">
-              <div className="bi-chart-card-header">
-                <h3>Oficios y Actividades de Mayor Afinidad Financiera</h3>
-                <small>Titulares con profesiones y oficios con alta compatibilidad para inversión y renta fija</small>
-              </div>
-              <EChart option={finveTradesBarOption} height={isMobile ? 240 : 260} />
-            </article>
-          </div>
-
-          {/* Interactive Prospect Radar Table */}
-          <section className="panel" style={{ padding: '20px', borderRadius: '16px', background: 'var(--card, #ffffff)', border: '1px solid var(--line, #e2e8f0)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px', marginBottom: '16px' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text, #0f172a)' }}>
-                  Radar de Prospectos para Finve (Bolsa de Valores & Renta Fija)
-                </h3>
-                <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'var(--meta, #64748b)' }}>
-                  Evaluación fiduciaria por KYC, capacidad económica, conectividad y estabilidad residencial.
-                </p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <input
-                  type="text"
-                  value={finveSearchQuery}
-                  onChange={(e) => setFinveSearchQuery(e.target.value)}
-                  placeholder="Buscar prospecto, cédula u oficio..."
-                  style={{
-                    padding: '7px 12px',
-                    fontSize: '0.82rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--line, #e2e8f0)',
-                    background: 'var(--card-2, #f8fafc)',
-                    minWidth: '220px',
-                  }}
-                />
-                <select
-                  value={finveTierFilter}
-                  onChange={(e) => setFinveTierFilter(e.target.value)}
-                  style={{
-                    padding: '7px 12px',
-                    fontSize: '0.82rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--line, #e2e8f0)',
-                    background: 'var(--card-2, #f8fafc)',
-                  }}
-                >
-                  <option value="Todos">Todos los niveles</option>
-                  <option value="Alto">Alto (Calificado Finve)</option>
-                  <option value="Medio">Medio (En Desarrollo)</option>
-                  <option value="Bajo">Bajo (En Maduración)</option>
-                </select>
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={handleExportFinveCsv}
-                  style={{ fontSize: '0.82rem', padding: '7px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>download</span>
-                  Exportar Prospectos Finve (CSV)
-                </button>
-              </div>
-            </div>
-
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Residente</th>
-                    <th>Sector / Hogar</th>
-                    <th>Oficio / Actividad</th>
-                    <th>Score Finve</th>
-                    <th>Nivel</th>
-                    <th>Fortalezas Clave</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {!filteredProspects.length && (
-                    <tr>
-                      <td colSpan="6" style={{ textAlign: 'center', padding: '32px 16px', color: '#64748B' }}>
-                        No se encontraron prospectos con los filtros actuales.
-                      </td>
-                    </tr>
-                  )}
-                  {filteredProspects.map((p) => (
-                    <tr key={p.id}>
-                      <td>
-                        <strong style={{ display: 'block', color: 'var(--text, #0f172a)' }}>{p.name}</strong>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                          <small className="mono" style={{ fontSize: '0.75rem', color: '#64748B' }}>{p.idNumber}</small>
-                          {p.rifNumber ? (
-                            <span style={{ fontSize: '0.65rem', fontWeight: 700, background: '#EFF6FF', color: '#1D4ED8', padding: '1px 5px', borderRadius: '4px' }}>
-                              RIF: {p.rifNumber}
-                            </span>
-                          ) : (
-                            <span style={{ fontSize: '0.65rem', color: '#94A3B8' }}>Sin RIF</span>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <strong style={{ fontSize: '0.82rem' }}>
-                          {p.zoneCode ? `CC ${p.zoneCode}` : 'Sin consejo comunal'} {p.houseNumber ? `· Casa ${p.houseNumber}` : ''}
-                        </strong>
-                        <small style={{ display: 'block', textTransform: 'capitalize', color: '#64748B', fontSize: '0.75rem' }}>
-                          Vivienda {p.housingTenure}
-                        </small>
-                      </td>
-                      <td>
-                        <strong style={{ fontSize: '0.82rem', color: 'var(--text)' }}>{p.trade}</strong>
-                        {p.age !== null && (
-                          <small style={{ display: 'block', color: '#64748B', fontSize: '0.75rem' }}>
-                            {p.age} años {p.age >= 18 && p.age <= 65 ? '· PEA' : ''}
-                          </small>
-                        )}
-                      </td>
-                      <td style={{ minWidth: '130px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <strong style={{ fontSize: '0.95rem', minWidth: '28px', color: p.tierColor }}>
-                            {p.score}
-                          </strong>
-                          <div style={{ flex: 1, height: '6px', background: '#E2E8F0', borderRadius: '3px', overflow: 'hidden' }}>
-                            <div
-                              style={{
-                                width: `${p.score}%`,
-                                height: '100%',
-                                background: p.tierColor,
-                                borderRadius: '3px',
-                              }}
-                            />
-                          </div>
-                        </div>
-                        <small style={{ fontSize: '0.68rem', color: '#94A3B8' }}>
-                          KYC {p.breakdown.kyc} | Eco {p.breakdown.economic} | Dig {p.breakdown.digital}
-                        </small>
-                      </td>
-                      <td>
-                        <span
-                          style={{
-                            fontSize: '0.72rem',
-                            fontWeight: 700,
-                            padding: '3px 8px',
-                            borderRadius: '12px',
-                            background: p.tier === 'Alto' ? '#ECFDF5' : p.tier === 'Medio' ? '#FFFBEB' : '#F1F5F9',
-                            color: p.tier === 'Alto' ? '#065F46' : p.tier === 'Medio' ? '#92400E' : '#475569',
-                            border: `1px solid ${p.tier === 'Alto' ? '#A7F3D0' : p.tier === 'Medio' ? '#FDE68A' : '#CBD5E1'}`,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: p.tierColor }} />
-                          {p.tierLabel}
-                        </span>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                          {p.strengths.slice(0, 3).map((s, idx) => (
-                            <span
-                              key={idx}
-                              style={{
-                                fontSize: '0.68rem',
-                                background: '#F8FAFC',
-                                border: '1px solid #E2E8F0',
-                                padding: '1px 6px',
-                                borderRadius: '4px',
-                                color: '#475569',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {s}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
         </div>
       )}
     </div>

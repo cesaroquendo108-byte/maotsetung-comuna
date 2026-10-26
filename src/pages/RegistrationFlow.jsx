@@ -1006,13 +1006,6 @@ export default function RegistrationFlow({ onCompleted } = {}) {
               >
                 Entrar al Portal Vecinal →
               </button>
-              <a
-                href="/fondo"
-                className="secondary-button full"
-                style={{ textDecoration: 'none', textAlign: 'center', padding: '0.75rem', fontSize: '0.9rem' }}
-              >
-                Consultar Fondo Comunal de Inversión
-              </a>
             </div>
           </div>
         </main>

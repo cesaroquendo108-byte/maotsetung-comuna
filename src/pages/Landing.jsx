@@ -10,9 +10,6 @@ export default function Landing() {
         <a className="landing-brand" href="/" aria-label="Comuna Mao Tse Tung inicio">
           <Brand compact />
         </a>
-        <nav aria-label="Secciones de Comuna Mao Tse Tung">
-          <a href="/fondo">Tesorería Comunal</a>
-        </nav>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <a className="landing-nav__cta" href="/app">
             Entrar al Portal
@@ -35,9 +32,6 @@ export default function Landing() {
               <a className="landing-button landing-button--primary" href="/app">
                 Entrar al Portal con Google
               </a>
-              <a className="landing-button landing-button--light" href="/fondo">
-                Tesorería y Fondo
-              </a>
               <a className="landing-button landing-button--outline" href={APP_DOWNLOAD} style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#ffd8d4' }}>
                 Descargar APK (Android)
               </a>
@@ -58,7 +52,6 @@ export default function Landing() {
           </p>
         </div>
         <nav>
-          <a href="/fondo">Tesorería Comunal</a>
           <a href="/app">Entrar al Portal</a>
           <a href={APP_DOWNLOAD}>Descargar APK</a>
         </nav>

@@ -31,7 +31,7 @@ export default function PaymentVerificationModal({ payment, onClose, onApprove, 
   const amountUsd = payment.amountUsd || (bcvRate && amountBsNum ? (amountBsNum / bcvRate).toFixed(2) : null);
 
   return (
-    <Modal open title="Verificación de Pago (Auditoría IA Finve)" onClose={onClose}>
+    <Modal open title="Verificación de Pago (Auditoría Óptica)" onClose={onClose}>
       <div className="payment-verification-card">
         <header className="pv-header">
           <div className="pv-badges">

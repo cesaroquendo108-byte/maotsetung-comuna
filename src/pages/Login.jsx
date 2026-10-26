@@ -233,15 +233,12 @@ export default function Login() {
           )}
 
           <div style={{ margin: '1.25rem 0 0.75rem', padding: '0.85rem 1rem', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '0.75rem', textAlign: 'center' }}>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: '#0F172A', fontWeight: 700 }}>Acceso Fiduciario Unificado</p>
-            <p style={{ margin: '0.35rem 0 0.65rem', fontSize: '0.8rem', color: '#475569', lineHeight: 1.45 }}>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#0F172A', fontWeight: 700 }}>Acceso Institucional Unificado</p>
+            <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: '#475569', lineHeight: 1.45 }}>
               {mode === 'signup'
                 ? 'Tras crear tu cuenta, pasaras directamente al registro de tu Cedula y RIF para vincular tu ficha censal al sistema.'
                 : 'Inicia sesion con tu correo o cuenta de Google. Si aun no tienes un hogar censado, podras completar tu ficha en el siguiente paso.'}
             </p>
-            <a href="/fondo" style={{ fontSize: '0.8rem', color: '#0284C7', textDecoration: 'none', fontWeight: 600 }}>
-              Consultar Fondo Comunal de Inversion →
-            </a>
           </div>
 
           {demoEnabled && (
